@@ -1,0 +1,4 @@
+scan:
+  scanners: [vuln, secret, config]
+  severity: HIGH,CRITICAL
+  ignore-unfixed: true
