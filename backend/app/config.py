@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     lemonsqueezy_api_key: str = ""
     lemonsqueezy_webhook_secret: str = ""
 
+    anthropic_api_key: str = ""
+
     sentry_dsn_backend: str = ""
 
 

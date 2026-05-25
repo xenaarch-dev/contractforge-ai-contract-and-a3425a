@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import billing, health, items
+from .routers import billing, contracts, health, items
 from .sentry import init_sentry
 
 logging.basicConfig(level=settings.log_level)
@@ -41,5 +41,6 @@ def healthz() -> dict:
 
 
 app.include_router(health.router)
+app.include_router(contracts.router)
 app.include_router(items.router, prefix="/api")
 app.include_router(billing.router, prefix="/api")

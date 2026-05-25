@@ -1,0 +1,379 @@
+from __future__ import annotations
+
+import io
+import os
+import urllib.request
+from datetime import datetime
+from typing import Optional
+
+from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.pdfmetrics import registerFontFamily
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import (
+    HRFlowable,
+    Paragraph,
+    SimpleDocTemplate,
+    Spacer,
+    Table,
+    TableStyle,
+)
+
+router = APIRouter(prefix="/contracts", tags=["contracts"])
+
+_INR = "₹"  # ₹
+
+# ── Font ──────────────────────────────────────────────────────────────────────
+
+_FONT = "Helvetica"
+_FONT_BOLD = "Helvetica-Bold"
+_FONT_INIT = False
+
+
+def _init_font() -> None:
+    global _FONT, _FONT_BOLD, _FONT_INIT
+    if _FONT_INIT:
+        return
+    _FONT_INIT = True
+
+    regular_candidates = [
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf",
+    ]
+    bold_candidates = [
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans-Bold.ttf",
+    ]
+
+    reg_path = next((p for p in regular_candidates if os.path.exists(p)), None)
+    bold_path = next((p for p in bold_candidates if os.path.exists(p)), None)
+
+    if not reg_path:
+        base = "https://github.com/dejavu-fonts/dejavu-fonts/raw/version_2_37/ttf"
+        for fname in ("DejaVuSans.ttf", "DejaVuSans-Bold.ttf"):
+            dest = f"/tmp/{fname}"
+            if not os.path.exists(dest):
+                try:
+                    urllib.request.urlretrieve(f"{base}/{fname}", dest)
+                except Exception:
+                    pass
+        reg_path = "/tmp/DejaVuSans.ttf" if os.path.exists("/tmp/DejaVuSans.ttf") else None
+        bold_path = (
+            "/tmp/DejaVuSans-Bold.ttf"
+            if os.path.exists("/tmp/DejaVuSans-Bold.ttf")
+            else None
+        )
+
+    if reg_path:
+        pdfmetrics.registerFont(TTFont("DejaVuSans", reg_path))
+        b = bold_path or reg_path
+        pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", b))
+        registerFontFamily("DejaVuSans", normal="DejaVuSans", bold="DejaVuSans-Bold")
+        _FONT = "DejaVuSans"
+        _FONT_BOLD = "DejaVuSans-Bold"
+
+
+# ── Schemas ───────────────────────────────────────────────────────────────────
+
+
+class ContractExportRequest(BaseModel):
+    freelancer_name: str = "Priya Sharma"
+    freelancer_gst: str = "27AABCU9603R1ZX"
+    freelancer_address: str = "Bandra West, Mumbai, Maharashtra 400050"
+    client_name: str = "Rahul Sharma"
+    client_company: str = "Sharma Enterprises Pvt Ltd"
+    client_address: str = "Andheri East, Mumbai, Maharashtra 400069"
+    deliverables: list[str] = [
+        "Company website — 5 pages (Home, About, Services, Portfolio, Contact)",
+        "Fully responsive design (mobile, tablet, desktop)",
+        "CMS integration for content management",
+        "SEO-optimized markup and meta tags",
+        "Performance-optimized asset pipeline",
+    ]
+    timeline: str = "30 days from agreement date"
+    amount: int = 75000
+    payment_schedule: str = (
+        "₹37,500 advance on signing; ₹37,500 on final delivery"
+    )
+
+
+class ContractGenerateRequest(BaseModel):
+    project_type: str
+    client_name: str
+    client_company: str
+    scope: str
+    fee: int
+    currency: str = "INR"
+    payment_terms: str
+    timeline: str
+
+
+class ContractGenerateResponse(BaseModel):
+    id: str
+    content: str
+    created_at: str
+
+
+# ── PDF builder ───────────────────────────────────────────────────────────────
+
+
+def _build_pdf(contract_id: str, req: ContractExportRequest) -> bytes:
+    _init_font()
+
+    buf = io.BytesIO()
+    page_w, _ = A4
+    margin = 2.5 * cm
+    avail_w = page_w - 2 * margin
+
+    doc = SimpleDocTemplate(
+        buf,
+        pagesize=A4,
+        rightMargin=margin,
+        leftMargin=margin,
+        topMargin=margin,
+        bottomMargin=margin,
+    )
+
+    h1 = ParagraphStyle(
+        "h1", fontName=_FONT_BOLD, fontSize=18, alignment=TA_CENTER, spaceAfter=4
+    )
+    right_style = ParagraphStyle(
+        "right_style", fontName=_FONT, fontSize=9, alignment=TA_RIGHT, spaceAfter=2
+    )
+    sec = ParagraphStyle(
+        "sec", fontName=_FONT_BOLD, fontSize=11, spaceBefore=14, spaceAfter=6
+    )
+    body = ParagraphStyle("body", fontName=_FONT, fontSize=10, leading=14, spaceAfter=4)
+    bold_body = ParagraphStyle(
+        "bold_body", fontName=_FONT_BOLD, fontSize=10, leading=14, spaceAfter=4
+    )
+    sig_hdr = ParagraphStyle(
+        "sig_hdr", fontName=_FONT_BOLD, fontSize=10, spaceAfter=4
+    )
+    sig_row = ParagraphStyle("sig_row", fontName=_FONT, fontSize=9, spaceAfter=10)
+
+    today = datetime.utcnow().strftime("%d %B %Y")
+    inr = f"{_INR}{req.amount:,}"
+    blank = "_____________________________"
+
+    story: list = []
+
+    # 1 — HEADER
+    story.append(Paragraph("SERVICE AGREEMENT", h1))
+    story.append(Paragraph(f"Contract ID: {contract_id}", right_style))
+    story.append(Paragraph(f"Date: {today}", right_style))
+    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.black))
+    story.append(Spacer(1, 0.3 * cm))
+
+    # 2 — PARTIES
+    story.append(Paragraph("1. PARTIES", sec))
+    story.append(Paragraph("This Agreement is entered into between:", body))
+    story.append(Spacer(1, 0.15 * cm))
+    story.append(Paragraph("FREELANCER", bold_body))
+    story.append(Paragraph(f"Name: {req.freelancer_name}", body))
+    story.append(Paragraph(f"GST Registration No.: {req.freelancer_gst}", body))
+    story.append(Paragraph(f"Address: {req.freelancer_address}", body))
+    story.append(Spacer(1, 0.15 * cm))
+    story.append(Paragraph("CLIENT", bold_body))
+    story.append(Paragraph(f"Name: {req.client_name}", body))
+    story.append(Paragraph(f"Company: {req.client_company}", body))
+    story.append(Paragraph(f"Address: {req.client_address}", body))
+
+    # 3 — SCOPE OF WORK
+    story.append(Paragraph("2. SCOPE OF WORK", sec))
+    story.append(Paragraph("The Freelancer agrees to deliver the following:", body))
+    for i, d in enumerate(req.deliverables, 1):
+        story.append(Paragraph(f"  {i}. {d}", body))
+    story.append(Spacer(1, 0.1 * cm))
+    story.append(Paragraph(f"Timeline / Delivery Date: {req.timeline}", bold_body))
+
+    # 4 — PAYMENT TERMS
+    story.append(Paragraph("3. PAYMENT TERMS", sec))
+    story.append(Paragraph(f"Total Project Fee: {inr} (Indian Rupees)", bold_body))
+    story.append(Paragraph(f"Payment Schedule: {req.payment_schedule}", body))
+    story.append(Spacer(1, 0.1 * cm))
+    story.append(
+        Paragraph(
+            "GST at 18% shall be applicable in addition to the fees stated above. "
+            "The Freelancer shall issue a valid GST invoice upon receipt of each payment.",
+            body,
+        )
+    )
+    story.append(Spacer(1, 0.1 * cm))
+    story.append(
+        Paragraph(
+            "Interest on delayed payments: 18% per annum shall be charged on all outstanding "
+            "amounts, as provided under the Indian Contract Act, 1872 (Sections 73–74).",
+            body,
+        )
+    )
+
+    # 5 — JURISDICTION
+    story.append(Paragraph("4. GOVERNING LAW AND JURISDICTION", sec))
+    story.append(
+        Paragraph(
+            "This Agreement is governed by and construed in accordance with the laws of India. "
+            "Any disputes arising out of or in connection with this Agreement shall be subject to "
+            "the exclusive jurisdiction of the competent courts in Mumbai, Maharashtra.",
+            body,
+        )
+    )
+
+    # 6 — TERMINATION
+    story.append(Paragraph("5. TERMINATION", sec))
+    story.append(
+        Paragraph(
+            "Either party may terminate this Agreement by providing 15 (fifteen) days' written "
+            "notice to the other party. Upon termination, the Client shall pay the Freelancer for "
+            "all work completed and deliverables provided up to the termination date.",
+            body,
+        )
+    )
+
+    # 7 — CONFIDENTIALITY
+    story.append(Paragraph("6. CONFIDENTIALITY", sec))
+    story.append(
+        Paragraph(
+            "Each party shall keep confidential all proprietary information, trade secrets, "
+            "business data, and intellectual property disclosed by the other party. This obligation "
+            "survives termination and remains in effect for two (2) years from the date of "
+            "termination or expiry of this Agreement.",
+            body,
+        )
+    )
+
+    # 8 — SIGNATURE BLOCK (two-column)
+    story.append(Paragraph("7. SIGNATURES", sec))
+    story.append(
+        Paragraph(
+            "By signing below, both parties confirm they have read, understood, and agreed to "
+            "the terms of this Agreement.",
+            body,
+        )
+    )
+    story.append(Spacer(1, 0.4 * cm))
+
+    col = avail_w / 2
+    sig_table = Table(
+        [
+            [
+                [
+                    Paragraph("FREELANCER", sig_hdr),
+                    Paragraph(f"Name: {req.freelancer_name}", sig_row),
+                    Paragraph(f"Designation: {blank}", sig_row),
+                    Spacer(1, 0.6 * cm),
+                    Paragraph(f"Signature: {blank}", sig_row),
+                    Paragraph(f"Date: {blank}", sig_row),
+                    Paragraph(f"Place: {blank}", sig_row),
+                ],
+                [
+                    Paragraph("CLIENT", sig_hdr),
+                    Paragraph(f"Name: {req.client_name}", sig_row),
+                    Paragraph(f"Company: {req.client_company}", sig_row),
+                    Spacer(1, 0.6 * cm),
+                    Paragraph(f"Signature: {blank}", sig_row),
+                    Paragraph(f"Date: {blank}", sig_row),
+                    Paragraph(f"Place: {blank}", sig_row),
+                ],
+            ]
+        ],
+        colWidths=[col, col],
+    )
+    sig_table.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                ("LINEAFTER", (0, 0), (0, -1), 0.5, colors.grey),
+            ]
+        )
+    )
+    story.append(sig_table)
+
+    doc.build(story)
+    return buf.getvalue()
+
+
+# ── Endpoints ─────────────────────────────────────────────────────────────────
+
+
+@router.post("/{contract_id}/export")
+async def export_contract(
+    contract_id: str,
+    payload: Optional[ContractExportRequest] = None,
+) -> StreamingResponse:
+    req = payload or ContractExportRequest()
+    pdf_bytes = _build_pdf(contract_id, req)
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="contract_{contract_id}.pdf"',
+            "Content-Length": str(len(pdf_bytes)),
+        },
+    )
+
+
+@router.post("/generate", response_model=ContractGenerateResponse)
+async def generate_contract(payload: ContractGenerateRequest) -> ContractGenerateResponse:
+    import anthropic as _anthropic
+
+    from ..config import settings
+
+    client = _anthropic.Anthropic(api_key=settings.anthropic_api_key)
+
+    system_prompt = (
+        "You are a legal contract drafting assistant specializing in Indian freelance and service "
+        "agreements. You generate professional, legally sound contracts governed by Indian law.\n\n"
+        "Always include without exception:\n"
+        f"- GST clause: 18% applicable, freelancer issues GST invoice\n"
+        f"- All monetary amounts in INR using {_INR} symbol\n"
+        "- Jurisdiction: Mumbai, Maharashtra courts\n"
+        "- Late payment: 18% per annum (Indian Contract Act, 1872, Section 73-74)\n"
+        "- Governing law: laws of India\n\n"
+        "Generate complete clauses. No placeholder text. No [INSERT], no TBD, no blanks."
+    )
+
+    user_prompt = (
+        f"Draft a complete service agreement:\n\n"
+        f"Project Type: {payload.project_type}\n"
+        f"Client Name: {payload.client_name}\n"
+        f"Client Company: {payload.client_company}\n"
+        f"Scope: {payload.scope}\n"
+        f"Fee: {_INR}{payload.fee:,}\n"
+        f"Payment Terms: {payload.payment_terms}\n"
+        f"Timeline: {payload.timeline}\n\n"
+        "Generate a complete professional service agreement with all India-law clauses: "
+        "parties, scope, payment with GST at 18%, late payment interest at 18% per annum "
+        "(Indian Contract Act 1872), jurisdiction (Mumbai Maharashtra courts), 15-day "
+        "termination notice, confidentiality (2 years), and signature blocks."
+    )
+
+    message = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=4096,
+        temperature=0.3,
+        system=system_prompt,
+        messages=[{"role": "user", "content": user_prompt}],
+    )
+
+    content = message.content[0].text
+    contract_id = f"cf-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
+
+    return ContractGenerateResponse(
+        id=contract_id,
+        content=content,
+        created_at=datetime.utcnow().isoformat(),
+    )
