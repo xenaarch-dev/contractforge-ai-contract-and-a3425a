@@ -329,8 +329,12 @@ async def export_contract(
 @router.post("/generate", response_model=ContractGenerateResponse)
 async def generate_contract(payload: ContractGenerateRequest) -> ContractGenerateResponse:
     import anthropic as _anthropic
+    from fastapi import HTTPException
 
     from ..config import settings
+
+    if not settings.anthropic_api_key:
+        raise HTTPException(status_code=503, detail="ANTHROPIC_API_KEY not configured on server")
 
     client = _anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
@@ -347,27 +351,43 @@ async def generate_contract(payload: ContractGenerateRequest) -> ContractGenerat
     )
 
     user_prompt = (
-        f"Draft a complete service agreement:\n\n"
+        f"Draft a concise service agreement (MAXIMUM 1000 words). Each clause: 2–4 sentences.\n\n"
         f"Project Type: {payload.project_type}\n"
         f"Client Name: {payload.client_name}\n"
         f"Client Company: {payload.client_company}\n"
         f"Scope: {payload.scope}\n"
-        f"Fee: {_INR}{payload.fee:,}\n"
+        f"Fee: {_INR}{payload.fee:,} (Indian Rupees)\n"
         f"Payment Terms: {payload.payment_terms}\n"
         f"Timeline: {payload.timeline}\n\n"
-        "Generate a complete professional service agreement with all India-law clauses: "
-        "parties, scope, payment with GST at 18%, late payment interest at 18% per annum "
-        "(Indian Contract Act 1872), jurisdiction (Mumbai Maharashtra courts), 15-day "
-        "termination notice, confidentiality (2 years), and signature blocks."
+        f"CONTRACT STRUCTURE — use exactly these 8 sections in order:\n"
+        f"1. PARTIES — name both parties\n"
+        f"2. SCOPE OF WORK — deliverables and timeline\n"
+        f"3. PAYMENT TERMS — must include: {_INR}{payload.fee:,} | "
+        f"GST at 18% shall be applicable. The Freelancer shall issue a valid GST invoice. | "
+        f"Interest at the rate of 18% per annum on outstanding amounts, "
+        f"per Indian Contract Act, 1872 (Sections 73–74).\n"
+        f"4. GOVERNING LAW — must include: This Agreement is governed by the laws of India. "
+        f"Disputes shall be subject to exclusive jurisdiction of courts in Mumbai, Maharashtra.\n"
+        f"5. TERMINATION — 15 days written notice\n"
+        f"6. CONFIDENTIALITY — 2 years post-agreement\n"
+        f"7. ENTIRE AGREEMENT — standard boilerplate\n"
+        f"8. SIGNATURES — two-column: Service Provider | {payload.client_name}\n\n"
+        f"Use '{payload.client_name}' / '{payload.client_company}' for client, "
+        f"'Service Provider' for freelancer. No brackets, no placeholders."
     )
 
-    message = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=4096,
-        temperature=0.3,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_prompt}],
-    )
+    try:
+        message = client.messages.create(
+            model="claude-sonnet-4-6",
+            max_tokens=4096,
+            temperature=0.3,
+            system=system_prompt,
+            messages=[{"role": "user", "content": user_prompt}],
+        )
+    except _anthropic.AuthenticationError as e:
+        raise HTTPException(status_code=401, detail=f"Anthropic auth failed: {e}")
+    except _anthropic.APIError as e:
+        raise HTTPException(status_code=502, detail=f"Anthropic API error: {e}")
 
     content = message.content[0].text
     contract_id = f"cf-{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
