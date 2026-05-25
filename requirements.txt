@@ -14,3 +14,4 @@ structlog>=24.1
 python-multipart>=0.0.9
 reportlab>=4.2
 anthropic>=0.50
+supabase>=2.0

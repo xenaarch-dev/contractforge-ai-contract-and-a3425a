@@ -6,8 +6,8 @@ import urllib.request
 from datetime import datetime
 from typing import Optional
 
-from fastapi import APIRouter
-from fastapi.responses import StreamingResponse
+from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from reportlab.lib import colors
@@ -26,6 +26,9 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
+
+from ..config import settings
+from ..services.entitlement import check_entitlement
 
 router = APIRouter(prefix="/contracts", tags=["contracts"])
 
@@ -87,6 +90,7 @@ def _init_font() -> None:
 
 
 class ContractExportRequest(BaseModel):
+    user_email: str = "anonymous@contractforge.io"
     freelancer_name: str = "Priya Sharma"
     freelancer_gst: str = "27AABCU9603R1ZX"
     freelancer_address: str = "Bandra West, Mumbai, Maharashtra 400050"
@@ -108,6 +112,7 @@ class ContractExportRequest(BaseModel):
 
 
 class ContractGenerateRequest(BaseModel):
+    user_email: str = "anonymous@contractforge.io"
     project_type: str
     client_name: str
     client_company: str
@@ -306,15 +311,35 @@ def _build_pdf(contract_id: str, req: ContractExportRequest) -> bytes:
     return buf.getvalue()
 
 
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+
+def _paywall_detail(reason: str) -> dict:
+    return {
+        "error": "payment_required",
+        "reason": reason,
+        "message": "This action requires a ContractForge subscription or credits.",
+        "checkout_per_contract": settings.lemonsqueezy_checkout_per_contract,
+        "checkout_monthly": settings.lemonsqueezy_checkout_monthly,
+        "pricing_page": "/pricing",
+    }
+
+
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
 
 @router.post("/{contract_id}/export")
 async def export_contract(
     contract_id: str,
+    request: Request,
     payload: Optional[ContractExportRequest] = None,
 ) -> StreamingResponse:
     req = payload or ContractExportRequest()
+    supabase = getattr(request.app.state, "supabase", None)
+    allowed, reason = await check_entitlement(req.user_email, supabase, consume=False)
+    if not allowed:
+        raise HTTPException(status_code=402, detail=_paywall_detail(reason))
+
     pdf_bytes = _build_pdf(contract_id, req)
     return StreamingResponse(
         io.BytesIO(pdf_bytes),
@@ -327,11 +352,16 @@ async def export_contract(
 
 
 @router.post("/generate", response_model=ContractGenerateResponse)
-async def generate_contract(payload: ContractGenerateRequest) -> ContractGenerateResponse:
+async def generate_contract(
+    payload: ContractGenerateRequest,
+    request: Request,
+) -> ContractGenerateResponse:
     import anthropic as _anthropic
-    from fastapi import HTTPException
 
-    from ..config import settings
+    supabase = getattr(request.app.state, "supabase", None)
+    allowed, reason = await check_entitlement(payload.user_email, supabase, consume=True)
+    if not allowed:
+        raise HTTPException(status_code=402, detail=_paywall_detail(reason))
 
     if not settings.anthropic_api_key:
         raise HTTPException(status_code=503, detail="ANTHROPIC_API_KEY not configured on server")

@@ -24,9 +24,12 @@ class Settings(BaseSettings):
 
     lemonsqueezy_api_key: str = ""
     lemonsqueezy_webhook_secret: str = ""
+    lemonsqueezy_store_id: str = ""
+    lemonsqueezy_checkout_per_contract: str = ""
+    lemonsqueezy_checkout_monthly: str = ""
+    lemonsqueezy_test_mode: str = "true"
 
     anthropic_api_key: str = ""
-
     sentry_dsn_backend: str = ""
 
 

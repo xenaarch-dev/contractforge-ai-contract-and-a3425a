@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from contextlib import asynccontextmanager
 from datetime import datetime
 
 from fastapi import FastAPI
@@ -13,11 +14,26 @@ from .sentry import init_sentry
 logging.basicConfig(level=settings.log_level)
 init_sentry()
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    if settings.supabase_url and settings.supabase_service_role_key:
+        from supabase import create_client
+        app.state.supabase = create_client(
+            settings.supabase_url,
+            settings.supabase_service_role_key,
+        )
+    else:
+        app.state.supabase = None
+    yield
+
+
 app = FastAPI(
-    title="App API",
-    version="0.1.0",
+    title="ContractForge API",
+    version="0.2.0",
     docs_url="/api/docs",
     redoc_url=None,
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -29,10 +45,9 @@ app.add_middleware(
 )
 
 
-# CRITICAL: never remove these — Render health checks /healthz on every deploy.
 @app.get("/")
 def root() -> dict:
-    return {"app": "App API", "version": "1.0.0", "status": "running"}
+    return {"app": "ContractForge API", "version": "0.2.0", "status": "running"}
 
 
 @app.get("/healthz")
@@ -41,6 +56,6 @@ def healthz() -> dict:
 
 
 app.include_router(health.router)
-app.include_router(contracts.router)
+app.include_router(billing.router)          # /webhooks/lemonsqueezy (no prefix)
+app.include_router(contracts.router)        # /contracts/...
 app.include_router(items.router, prefix="/api")
-app.include_router(billing.router, prefix="/api")
