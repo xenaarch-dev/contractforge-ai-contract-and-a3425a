@@ -55,3 +55,37 @@
 - Lemon Squeezy checkout integration (per-contract + monthly)
 - Supabase free-trial gate (1 free contract, then paywall)
 - E-signature flow (Phase 2)
+
+---
+
+## [2026-05-26T07:06:00Z] Session 5 — Auth redirect fix + QA tests 5-7
+
+**Status:** COMPLETE
+
+### Auth redirect fix
+
+**Root cause:** `emailRedirectTo` in `signup/page.tsx` used only `window.location.origin`. Supabase dashboard Site URL was pointing to localhost, causing confirmation emails to redirect there even when the Vercel URL was passed.
+
+**Fixes applied:**
+1. **FIX B (code)** — `frontend/app/auth/signup/page.tsx`: `emailRedirectTo` now uses `process.env.NEXT_PUBLIC_SITE_URL || window.location.origin`. Commit `71b6f21`.
+2. **FIX A (Supabase dashboard)** — Site URL set to `https://contractforge-ai-contract-and-a3425.vercel.app`. Redirect URLs: `https://contractforge-ai-contract-and-a3425.vercel.app/**` and `https://contractforge-ai-contract-and-a3425.vercel.app/auth/callback`. (localhost not allowed on free plan.)
+3. **FIX C (Vercel env var)** — `NEXT_PUBLIC_SITE_URL=https://contractforge-ai-contract-and-a3425.vercel.app` to be added (user action pending).
+
+### QA Tests 5-7 — ALL PASSED
+
+| Test | Endpoint | Result | Notes |
+|---|---|---|---|
+| 5 — Contract generation | `POST /contracts/generate` | ✅ 200 | contract_id `cf-20260526070625`, ₹75,000, GST 18%, Mumbai |
+| 6 — PDF export | `POST /contracts/{id}/export` | ✅ 200 | 46,531 bytes, DejaVuSans font |
+| 7 — Paywall gate | `POST /contracts/generate` (2nd) | ✅ 402 | Free trial consumed, paywall fires correctly |
+
+**Test user:** `qa-xenaarch-146@mailinator.com` (created via admin API, email pre-confirmed)
+
+**Production URLs:**
+- Frontend: `https://contractforge-ai-contract-and-a3425.vercel.app`
+- Backend: `https://contractforge-ai-contract-and-a3425a.onrender.com`
+
+**Pending (user action):**
+- Add `NEXT_PUBLIC_SITE_URL` to Vercel env vars → triggers redeploy
+
+**Next session:** Laptop + Obsidian setup, ForgeOS agents (`~/forge/forgeos`)
