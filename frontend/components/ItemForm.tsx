@@ -1,38 +1,110 @@
-"use client";
+﻿"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { createItem, type Item } from "@/lib/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
-const Schema = z.object({ title: z.string().min(1).max(200) });
+const Schema = z.object({
+  project_type: z.string().min(2, "Required"),
+  client_name: z.string().min(2, "Required"),
+  client_company: z.string().min(1, "Required"),
+  scope: z.string().min(10, "Describe the scope"),
+  fee: z.coerce.number().min(1, "Enter a fee"),
+  payment_terms: z.string().min(5, "Required"),
+  timeline: z.string().min(3, "Required"),
+  jurisdiction: z.enum(["India", "UK", "US"]),
+});
 type FormValues = z.infer<typeof Schema>;
 
-export function ItemForm({ onCreated }: { onCreated: (i: Item) => void }) {
+export function ItemForm({ onCreated }: { onCreated: (i: ContractResult) => void }) {
+  const [generated, setGenerated] = useState<string | null>(null);
   const { register, handleSubmit, reset, formState } = useForm<FormValues>({
     resolver: zodResolver(Schema),
+    defaultValues: { jurisdiction: "India" },
   });
 
   const onSubmit = handleSubmit(async (values) => {
-    const item = await createItem({ title: values.title });
-    onCreated(item);
+    const r = await fetch(`${API_BASE}/contracts/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...values, user_email: "anonymous@contractforge.io" }),
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data: ContractResult = await r.json();
+    setGenerated(data.content);
+    onCreated(data);
     reset();
   });
 
   return (
-    <form onSubmit={onSubmit} className="flex gap-2">
-      <input
-        {...register("title")}
-        placeholder="What needs doing?"
-        className="flex-1 rounded border px-3 py-2"
-      />
-      <button
-        disabled={formState.isSubmitting}
-        className="rounded bg-slate-900 px-4 py-2 text-white"
-      >
-        Add
-      </button>
-    </form>
+    <div className="space-y-6">
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field label="Project Type" error={formState.errors.project_type?.message}>
+            <input {...register("project_type")} placeholder="e.g. Web Development" className={inputCls} />
+          </Field>
+          <Field label="Client Name" error={formState.errors.client_name?.message}>
+            <input {...register("client_name")} placeholder="Rahul Sharma" className={inputCls} />
+          </Field>
+          <Field label="Client Company" error={formState.errors.client_company?.message}>
+            <input {...register("client_company")} placeholder="Sharma Enterprises Pvt Ltd" className={inputCls} />
+          </Field>
+          <Field label="Fee (number)" error={formState.errors.fee?.message}>
+            <input {...register("fee")} type="number" placeholder="75000" className={inputCls} />
+          </Field>
+          <Field label="Payment Terms" error={formState.errors.payment_terms?.message}>
+            <input {...register("payment_terms")} placeholder="50% advance, 50% on delivery" className={inputCls} />
+          </Field>
+          <Field label="Timeline" error={formState.errors.timeline?.message}>
+            <input {...register("timeline")} placeholder="30 days from signing" className={inputCls} />
+          </Field>
+        </div>
+
+        <Field label="Scope of Work" error={formState.errors.scope?.message}>
+          <textarea {...register("scope")} rows={3} placeholder="Describe deliverables?" className={inputCls} />
+        </Field>
+
+        <Field label="Jurisdiction" error={formState.errors.jurisdiction?.message}>
+          <select {...register("jurisdiction")} className={inputCls}>
+            <option value="India">India (default)</option>
+            <option value="UK">United Kingdom</option>
+            <option value="US">United States</option>
+          </select>
+        </Field>
+
+        <button
+          type="submit"
+          disabled={formState.isSubmitting}
+          className="w-full rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-60"
+        >
+          {formState.isSubmitting ? "Generating?" : "Generate Contract"}
+        </button>
+      </form>
+
+      {generated && (
+        <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
+          <h3 className="mb-3 text-sm font-semibold text-zinc-300">Generated Contract</h3>
+          <pre className="overflow-x-auto whitespace-pre-wrap text-xs leading-relaxed text-zinc-400">{generated}</pre>
+        </div>
+      )}
+    </div>
   );
 }
+
+function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <label className="mb-1 block text-xs font-medium text-zinc-400">{label}</label>
+      {children}
+      {error && <p className="mt-1 text-xs text-red-400">{error}</p>}
+    </div>
+  );
+}
+
+const inputCls =
+  "w-full rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-indigo-500 focus:outline-none";
+
+export type ContractResult = { id: string; content: string; created_at: string };

@@ -111,6 +111,24 @@ class ContractExportRequest(BaseModel):
     )
 
 
+_JURISDICTION_CLAUSES: dict[str, str] = {
+    "India": (
+        "This Agreement is governed by the laws of India. Disputes shall be subject to exclusive "
+        "jurisdiction of competent courts in Mumbai, Maharashtra, with mandatory pre-litigation "
+        "arbitration under the Arbitration and Conciliation Act, 1996."
+    ),
+    "UK": (
+        "This Agreement is governed by the laws of England and Wales. The Contracts (Rights of "
+        "Third Parties) Act 1999 applies. IR35 status determination obligations are acknowledged. "
+        "Disputes shall be resolved in courts of England and Wales."
+    ),
+    "US": (
+        "This Agreement is governed by the laws of the State of [State], without regard to "
+        "conflict of law provisions. All intellectual property and work product created under "
+        "this Agreement are assigned to the Client upon full payment, unless otherwise agreed in writing."
+    ),
+}
+
 class ContractGenerateRequest(BaseModel):
     user_email: str = "anonymous@contractforge.io"
     project_type: str
@@ -121,6 +139,7 @@ class ContractGenerateRequest(BaseModel):
     currency: str = "INR"
     payment_terms: str
     timeline: str
+    jurisdiction: str = "India"
 
 
 class ContractGenerateResponse(BaseModel):
@@ -368,17 +387,22 @@ async def generate_contract(
 
     client = _anthropic.Anthropic(api_key=settings.anthropic_api_key)
 
-    system_prompt = (
-        "You are a legal contract drafting assistant specializing in Indian freelance and service "
-        "agreements. You generate professional, legally sound contracts governed by Indian law.\n\n"
-        "Always include without exception:\n"
+    jurisdiction_clause = _JURISDICTION_CLAUSES.get(
+        payload.jurisdiction, _JURISDICTION_CLAUSES["India"]
+    )
+    india_extras = (
         f"- GST clause: 18% applicable, freelancer issues GST invoice\n"
         f"- All monetary amounts in INR using {_INR} symbol\n"
-        "- Jurisdiction: Mumbai, Maharashtra courts\n"
-        "- Late payment: 18% per annum (Indian Contract Act, 1872, Section 73-74)\n"
-        "- Governing law: laws of India\n\n"
+        f"- Late payment: 18% per annum (Indian Contract Act, 1872, Sections 73-74)\n"
+    ) if payload.jurisdiction == "India" else ""
+    system_prompt = (
+        f"You are a legal contract drafting assistant generating professional, legally sound "
+        f"service agreements governed by {payload.jurisdiction} law.\n\n"
+        "Always include without exception:\n"
+        + india_extras
+        + f"- Governing law: {jurisdiction_clause}\n\n"
         "Generate complete clauses. No placeholder text. No [INSERT], no TBD, no blanks."
-    )
+    ))
 
     user_prompt = (
         f"Draft a concise service agreement (MAXIMUM 1000 words). Each clause: 2–4 sentences.\n\n"
