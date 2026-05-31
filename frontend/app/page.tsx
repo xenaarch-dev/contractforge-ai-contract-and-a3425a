@@ -250,16 +250,11 @@ export default function HomePage() {
       <footer className="border-t border-zinc-800 px-6 py-8">
         <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 text-sm text-zinc-500 sm:flex-row sm:justify-between">
           <span className="font-semibold text-zinc-300">ContractForge</span>
-          <div className="flex gap-6">
-            <a href="/pricing" className="transition hover:text-zinc-300">
-              Pricing
-            </a>
-            <a href="/auth/signin" className="transition hover:text-zinc-300">
-              Sign in
-            </a>
-            <a href="/auth/signup" className="transition hover:text-zinc-300">
-              Sign up
-            </a>
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
+            <a href="/terms" className="transition hover:text-zinc-300">Terms of Service</a>
+            <a href="/privacy" className="transition hover:text-zinc-300">Privacy Policy</a>
+            <a href="/refund" className="transition hover:text-zinc-300">Refund Policy</a>
+            <a href="/pricing" className="transition hover:text-zinc-300">Pricing</a>
           </div>
           <span>Built in Mumbai &middot; @xenaarch</span>
         </div>
