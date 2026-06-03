@@ -335,12 +335,11 @@ def _build_pdf(contract_id: str, req: ContractExportRequest) -> bytes:
 
 def _paywall_detail(reason: str) -> dict:
     return {
-        "error": "payment_required",
-        "reason": reason,
-        "message": "This action requires a ContractForge subscription or credits.",
-        "checkout_per_contract": settings.lemonsqueezy_checkout_per_contract,
+        "error": "subscription_required",
+        "upgrade_url": "/pricing",
         "checkout_monthly": settings.lemonsqueezy_checkout_monthly,
-        "pricing_page": "/pricing",
+        "checkout_per_contract": settings.lemonsqueezy_checkout_per_contract,
+        "message": "Generate unlimited contracts from ₹2,499/month",
     }
 
 
@@ -402,7 +401,7 @@ async def generate_contract(
         + india_extras
         + f"- Governing law: {jurisdiction_clause}\n\n"
         "Generate complete clauses. No placeholder text. No [INSERT], no TBD, no blanks."
-    ))
+    )
 
     user_prompt = (
         f"Draft a concise service agreement (MAXIMUM 1000 words). Each clause: 2–4 sentences.\n\n"

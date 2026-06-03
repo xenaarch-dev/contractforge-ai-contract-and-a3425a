@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from pydantic import Field
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", populate_by_name=True)
 
     database_url: str = Field("postgresql+asyncpg://app:app@localhost:5432/app")
     supabase_url: str = ""
@@ -22,11 +22,24 @@ class Settings(BaseSettings):
     upstash_redis_url: str = ""
     upstash_redis_token: str = ""
 
-    lemonsqueezy_api_key: str = ""
-    lemonsqueezy_webhook_secret: str = ""
+    # Accept both Doppler names (LEMON_SQUEEZY_* / LS_*) and legacy names
+    lemonsqueezy_api_key: str = Field(
+        "",
+        validation_alias=AliasChoices("LEMON_SQUEEZY_API_KEY", "LEMONSQUEEZY_API_KEY"),
+    )
+    lemonsqueezy_webhook_secret: str = Field(
+        "",
+        validation_alias=AliasChoices("LEMON_SQUEEZY_WEBHOOK_SECRET", "LEMONSQUEEZY_WEBHOOK_SECRET"),
+    )
     lemonsqueezy_store_id: str = ""
-    lemonsqueezy_checkout_per_contract: str = ""
-    lemonsqueezy_checkout_monthly: str = ""
+    lemonsqueezy_checkout_per_contract: str = Field(
+        "",
+        validation_alias=AliasChoices("LS_CHECKOUT_PER_CONTRACT", "LEMONSQUEEZY_CHECKOUT_PER_CONTRACT"),
+    )
+    lemonsqueezy_checkout_monthly: str = Field(
+        "",
+        validation_alias=AliasChoices("LS_CHECKOUT_MONTHLY", "LEMONSQUEEZY_CHECKOUT_MONTHLY"),
+    )
     lemonsqueezy_test_mode: str = "true"
 
     anthropic_api_key: str = ""
