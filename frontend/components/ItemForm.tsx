@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
@@ -19,20 +19,47 @@ const Schema = z.object({
 });
 type FormValues = z.infer<typeof Schema>;
 
+type PaywallInfo = {
+  message: string;
+  checkout_monthly: string;
+  checkout_per_contract: string;
+};
+
 export function ItemForm({ onCreated }: { onCreated: (i: ContractResult) => void }) {
   const [generated, setGenerated] = useState<string | null>(null);
+  const [paywall, setPaywall] = useState<PaywallInfo | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const { register, handleSubmit, reset, formState } = useForm<FormValues>({
     resolver: zodResolver(Schema),
     defaultValues: { jurisdiction: "India" },
   });
 
   const onSubmit = handleSubmit(async (values) => {
+    setPaywall(null);
+    setSubmitError(null);
     const r = await fetch(`${API_BASE}/contracts/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...values, user_email: "anonymous@contractforge.io" }),
     });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+
+    if (r.status === 402) {
+      const body = await r.json().catch(() => ({}));
+      const detail = body?.detail ?? body;
+      setPaywall({
+        message: detail?.message ?? "A subscription is required to generate contracts.",
+        checkout_monthly: detail?.checkout_monthly ?? "/pricing",
+        checkout_per_contract: detail?.checkout_per_contract ?? "/pricing",
+      });
+      return;
+    }
+
+    if (!r.ok) {
+      const body = await r.json().catch(() => ({}));
+      setSubmitError(body?.detail ?? `Server error (HTTP ${r.status})`);
+      return;
+    }
+
     const data: ContractResult = await r.json();
     setGenerated(data.content);
     onCreated(data);
@@ -64,7 +91,7 @@ export function ItemForm({ onCreated }: { onCreated: (i: ContractResult) => void
         </div>
 
         <Field label="Scope of Work" error={formState.errors.scope?.message}>
-          <textarea {...register("scope")} rows={3} placeholder="Describe deliverables?" className={inputCls} />
+          <textarea {...register("scope")} rows={3} placeholder="Describe deliverables…" className={inputCls} />
         </Field>
 
         <Field label="Jurisdiction" error={formState.errors.jurisdiction?.message}>
@@ -80,9 +107,42 @@ export function ItemForm({ onCreated }: { onCreated: (i: ContractResult) => void
           disabled={formState.isSubmitting}
           className="w-full rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-60"
         >
-          {formState.isSubmitting ? "Generating?" : "Generate Contract"}
+          {formState.isSubmitting ? "Generating…" : "Generate Contract"}
         </button>
       </form>
+
+      {submitError && (
+        <div className="rounded-xl border border-red-800 bg-red-950/40 px-4 py-3 text-sm text-red-300">
+          {submitError}
+        </div>
+      )}
+
+      {paywall && (
+        <div className="rounded-2xl border border-amber-700 bg-amber-950/30 p-6">
+          <p className="mb-4 font-semibold text-amber-300">{paywall.message}</p>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <a
+              href={paywall.checkout_per_contract}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 rounded-xl border border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-200 transition hover:border-zinc-400"
+            >
+              Buy Single Contract — ₹1,499
+            </a>
+            <a
+              href={paywall.checkout_monthly}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-indigo-500"
+            >
+              Subscribe Monthly — ₹2,499/mo
+            </a>
+          </div>
+          <p className="mt-3 text-xs text-zinc-500">
+            Secure payment via Lemon Squeezy · GST invoice included
+          </p>
+        </div>
+      )}
 
       {generated && (
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">

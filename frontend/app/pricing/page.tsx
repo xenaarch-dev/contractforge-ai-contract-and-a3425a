@@ -115,7 +115,7 @@ export default function PricingPage() {
 
         {/* Footer note */}
         <p className="mt-12 text-center text-sm text-zinc-600">
-          Secure checkout powered by Lemon Squeezy &middot; All prices in INR
+          Secure payment via Lemon Squeezy &middot; GST invoice included &middot; Prices in INR
         </p>
       </div>
     </main>
