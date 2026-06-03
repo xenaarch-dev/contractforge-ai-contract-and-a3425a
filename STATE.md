@@ -1,5 +1,59 @@
 # ContractForge — Build State
 
+## [2026-06-03T07:06:00Z] Session 6 — Lemon Squeezy wiring
+
+**Status:** COMPLETE
+
+### What was built
+
+**Phase 1 — Backend (commit `5ebe4a6`)**
+
+| File | Change |
+|---|---|
+| `backend/app/config.py` | `AliasChoices` for `LEMON_SQUEEZY_*` / `LS_*` Doppler env vars + legacy `LEMONSQUEEZY_*` names |
+| `backend/app/routers/billing.py` | Full rewrite: 422 on bad HMAC, `webhooks_log` logging, `subscription_ends_at` from `renews_at`/`ends_at`, `order_created` increments credits, new `GET /billing/status` endpoint |
+| `backend/app/routers/contracts.py` | 402 body → `subscription_required`, `upgrade_url: "/pricing"`, `"Generate unlimited contracts from ₹2,499/month"` |
+| `supabase/migrations/003_webhooks_log.sql` | `webhooks_log` table + `subscription_ends_at` column on `subscriptions` |
+| `backend/tests/test_billing.py` | 7 tests: invalid HMAC→422, `GET /billing/status` free + monthly, webhook log assertions |
+
+**Phase 2 — Frontend (commit `f697450`)**
+
+| File | Change |
+|---|---|
+| `frontend/app/pricing/page.tsx` | Footer: "GST invoice included · Prices in INR" |
+| `frontend/components/ItemForm.tsx` | 402 → inline paywall with both checkout buttons; other errors → inline message; no raw throw |
+| `frontend/app/dashboard/page.tsx` | Loads `GET /billing/status` on mount; shows plan badge (monthly/per_contract/free) |
+
+**Also fixed:** pre-existing `SyntaxError` in `contracts.py` (extra `)` at line 404)
+
+### Done-state — all tests green
+
+| Criterion | Result |
+|---|---|
+| `pytest -x -q` — 9 tests | ✅ 9/9 green |
+| `POST /webhooks/lemonsqueezy` valid HMAC → 200 | ✅ |
+| `POST /webhooks/lemonsqueezy` invalid HMAC → 422 | ✅ |
+| `GET /billing/status` free plan | ✅ |
+| `GET /billing/status` monthly plan | ✅ |
+| `POST /contracts/generate` no sub → 402 `subscription_required` | ✅ |
+| GitHub push → Render auto-deploy | ✅ |
+| `GET /healthz` → 200 | ✅ `https://contractforge-ai-contract-and-a3425a.onrender.com/healthz` |
+
+### Pending / not yet done
+
+- **Doppler `doppler` CLI** not in shell PATH in this dev environment — secrets confirmed present at Doppler dashboard level. Production Render reads them via the Doppler integration automatically. No local `doppler run` check was possible.
+- **Supabase migration** `003_webhooks_log.sql` must be applied manually via Supabase dashboard or `supabase db push` before webhooks are logged in production.
+- **`NEXT_PUBLIC_CHECKOUT_PER_CONTRACT` / `NEXT_PUBLIC_CHECKOUT_MONTHLY`** env vars must be set in Vercel for the pricing buttons to show real LS URLs (not `#`).
+- **`NEXT_PUBLIC_SITE_URL`** in Vercel still pending from Session 5.
+- **Real user auth** in dashboard: `user_email` is currently hardcoded to `anonymous@contractforge.io`. Replace with Supabase session email when auth flow is wired to dashboard.
+- E-signature flow (Phase 3).
+
+**Production:**
+- Frontend: `https://contractforge-ai-contract-and-a3425.vercel.app`
+- Backend: `https://contractforge-ai-contract-and-a3425a.onrender.com`
+
+---
+
 ## [2026-05-25T00:00:00Z] Session 4 — Landing page + auth routes
 
 **Status:** COMPLETE
