@@ -19,7 +19,7 @@ function LegalPage({ html, title }: { html: string; title: string }) {
           <a href="/" className="text-lg font-bold tracking-tight text-white">ContractForge</a>
           <div className="flex items-center gap-3">
             <a href="/auth/signin" className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300 transition hover:text-white">Sign in</a>
-            <a href="/auth/signup" className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500">Start free</a>
+            <a href="/auth/signup" className="rounded-xl bg-[#3E5F44] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4a7252]">Start free</a>
           </div>
         </div>
       </nav>
@@ -37,7 +37,7 @@ function LegalPage({ html, title }: { html: string; title: string }) {
                 href={href}
                 className={`rounded-xl px-4 py-2 font-medium transition ${
                   label === title
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-[#3E5F44] text-white"
                     : "text-zinc-400 hover:text-zinc-200"
                 }`}
               >

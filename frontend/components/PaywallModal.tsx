@@ -56,7 +56,7 @@ export default function PaywallModal({
             href={checkoutPerContract}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full rounded-xl bg-indigo-600 px-6 py-3 text-center font-semibold text-white transition hover:bg-indigo-500"
+            className="block w-full rounded-xl bg-[#3E5F44] px-6 py-3 text-center font-semibold text-white transition hover:bg-[#4a7252]"
           >
             Buy Single Contract &mdash; &#8377;1,499
           </a>
@@ -64,7 +64,7 @@ export default function PaywallModal({
             href={checkoutMonthly}
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full rounded-xl border border-zinc-700 px-6 py-3 text-center font-semibold text-zinc-200 transition hover:border-zinc-500 hover:text-white"
+            className="block w-full rounded-xl border border-[#DDD6B9] px-6 py-3 text-center font-semibold text-[#DDD6B9] transition hover:border-[#DDD6B9]/80 hover:text-white"
           >
             Subscribe Monthly &mdash; &#8377;2,499/mo
           </a>

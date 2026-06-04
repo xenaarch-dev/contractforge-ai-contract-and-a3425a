@@ -25,7 +25,13 @@ type PaywallInfo = {
   checkout_per_contract: string;
 };
 
-export function ItemForm({ onCreated }: { onCreated: (i: ContractResult) => void }) {
+export function ItemForm({
+  onCreated,
+  userEmail = "",
+}: {
+  onCreated: (i: ContractResult) => void;
+  userEmail?: string;
+}) {
   const [generated, setGenerated] = useState<string | null>(null);
   const [paywall, setPaywall] = useState<PaywallInfo | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -40,7 +46,7 @@ export function ItemForm({ onCreated }: { onCreated: (i: ContractResult) => void
     const r = await fetch(`${API_BASE}/contracts/generate`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...values, user_email: "anonymous@contractforge.io" }),
+      body: JSON.stringify({ ...values, user_email: userEmail || "anonymous@contractforge.io" }),
     });
 
     if (r.status === 402) {
@@ -105,7 +111,7 @@ export function ItemForm({ onCreated }: { onCreated: (i: ContractResult) => void
         <button
           type="submit"
           disabled={formState.isSubmitting}
-          className="w-full rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-60"
+          className="w-full rounded-xl bg-[#3E5F44] px-6 py-3 font-semibold text-white transition hover:bg-[#4a7252] disabled:opacity-60"
         >
           {formState.isSubmitting ? "Generating…" : "Generate Contract"}
         </button>
@@ -125,7 +131,7 @@ export function ItemForm({ onCreated }: { onCreated: (i: ContractResult) => void
               href={paywall.checkout_per_contract}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 rounded-xl border border-zinc-600 px-4 py-2 text-center text-sm font-medium text-zinc-200 transition hover:border-zinc-400"
+              className="flex-1 rounded-xl border border-[#DDD6B9] px-4 py-2 text-center text-sm font-medium text-[#DDD6B9] transition hover:border-[#DDD6B9]/80"
             >
               Buy Single Contract — ₹1,499
             </a>
@@ -133,7 +139,7 @@ export function ItemForm({ onCreated }: { onCreated: (i: ContractResult) => void
               href={paywall.checkout_monthly}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 rounded-xl bg-indigo-600 px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-indigo-500"
+              className="flex-1 rounded-xl bg-[#3E5F44] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[#4a7252]"
             >
               Subscribe Monthly — ₹2,499/mo
             </a>
@@ -165,6 +171,6 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 }
 
 const inputCls =
-  "w-full rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-indigo-500 focus:outline-none";
+  "w-full rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-[#3E5F44] focus:outline-none";
 
 export type ContractResult = { id: string; content: string; created_at: string };

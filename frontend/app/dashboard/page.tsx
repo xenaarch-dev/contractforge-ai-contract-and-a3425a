@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { ItemForm, type ContractResult } from "@/components/ItemForm";
+import { supabase } from "@/lib/supabase";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
-const ANON_EMAIL = "anonymous@contractforge.io";
 
 type BillingStatus = {
   subscription_active: boolean;
@@ -21,8 +21,8 @@ function PlanBadge({ status }: { status: BillingStatus }) {
       ? new Date(status.subscription_ends_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
       : null;
     return (
-      <div className="mb-6 flex items-center gap-3 rounded-xl border border-indigo-700 bg-indigo-950/40 px-4 py-3 text-sm">
-        <span className="rounded-full bg-indigo-600 px-2 py-0.5 text-xs font-semibold text-white">Monthly</span>
+      <div className="mb-6 flex items-center gap-3 rounded-xl border border-[#3E5F44]/70 bg-[#3E5F44]/10 px-4 py-3 text-sm">
+        <span className="rounded-full bg-[#3E5F44] px-2 py-0.5 text-xs font-semibold text-white">Monthly</span>
         <span className="text-zinc-300">Unlimited contracts active</span>
         {expiry && <span className="ml-auto text-zinc-500">Renews {expiry}</span>}
       </div>
@@ -33,7 +33,7 @@ function PlanBadge({ status }: { status: BillingStatus }) {
       <div className="mb-6 flex items-center gap-3 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 text-sm">
         <span className="rounded-full bg-zinc-700 px-2 py-0.5 text-xs font-semibold text-zinc-200">Credits</span>
         <span className="text-zinc-300">{status.credits_remaining} contract{status.credits_remaining !== 1 ? "s" : ""} remaining</span>
-        <a href="/pricing" className="ml-auto text-xs text-indigo-400 hover:text-indigo-300">Top up</a>
+        <a href="/pricing" className="ml-auto text-xs text-[#3E5F44] hover:text-[#4a7252]">Top up</a>
       </div>
     );
   }
@@ -41,7 +41,7 @@ function PlanBadge({ status }: { status: BillingStatus }) {
     <div className="mb-6 flex items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm">
       <span className="text-zinc-400">Free plan</span>
       <span className="text-zinc-500">· 1 free contract included</span>
-      <a href="/pricing" className="ml-auto text-xs text-indigo-400 hover:text-indigo-300">Upgrade</a>
+      <a href="/pricing" className="ml-auto text-xs text-[#3E5F44] hover:text-[#4a7252]">Upgrade</a>
     </div>
   );
 }
@@ -49,12 +49,18 @@ function PlanBadge({ status }: { status: BillingStatus }) {
 export default function DashboardPage() {
   const [contracts, setContracts] = useState<ContractResult[]>([]);
   const [billing, setBilling] = useState<BillingStatus | null>(null);
+  const [userEmail, setUserEmail] = useState("");
 
   useEffect(() => {
-    fetch(`${API_BASE}/billing/status?user_email=${encodeURIComponent(ANON_EMAIL)}`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => data && setBilling(data))
-      .catch(() => null);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const email = session?.user?.email ?? "";
+      setUserEmail(email);
+      const emailParam = email || "anonymous@contractforge.io";
+      fetch(`${API_BASE}/billing/status?user_email=${encodeURIComponent(emailParam)}`)
+        .then((r) => r.ok ? r.json() : null)
+        .then((data) => data && setBilling(data))
+        .catch(() => null);
+    });
   }, []);
 
   return (
@@ -64,7 +70,7 @@ export default function DashboardPage() {
 
       {billing && <PlanBadge status={billing} />}
 
-      <ItemForm onCreated={(c) => setContracts((prev) => [c, ...prev])} />
+      <ItemForm userEmail={userEmail} onCreated={(c) => setContracts((prev) => [c, ...prev])} />
 
       {contracts.length > 0 && (
         <div className="mt-8">

@@ -19,7 +19,7 @@ export default function HomePage() {
             </a>
             <a
               href="/auth/signup"
-              className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500"
+              className="rounded-xl bg-[#3E5F44] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4a7252]"
             >
               Start free
             </a>
@@ -29,7 +29,7 @@ export default function HomePage() {
 
       {/* HERO */}
       <section className="mx-auto max-w-3xl px-6 py-24 text-center">
-        <span className="mb-6 inline-block rounded-full border border-indigo-500/40 bg-indigo-950/40 px-4 py-1.5 text-xs font-medium tracking-wide text-indigo-300">
+        <span className="mb-6 inline-block rounded-full border border-[#3E5F44]/40 bg-[#3E5F44]/10 px-4 py-1.5 text-xs font-medium tracking-wide text-[#DDD6B9]">
           Built for Indian freelancers
         </span>
         <h1 className="mt-4 text-5xl font-bold leading-tight tracking-tight md:text-6xl">
@@ -47,7 +47,7 @@ export default function HomePage() {
         <div className="mt-10">
           <a
             href="/auth/signup"
-            className="inline-block rounded-xl bg-indigo-600 px-8 py-4 text-base font-semibold text-white transition hover:bg-indigo-500"
+            className="inline-block rounded-xl bg-[#3E5F44] px-8 py-4 text-base font-semibold text-white transition hover:bg-[#4a7252]"
           >
             Generate your first contract — free
           </a>
@@ -85,7 +85,7 @@ export default function HomePage() {
                 key={item.step}
                 className="rounded-2xl border border-zinc-800 bg-zinc-900 p-8"
               >
-                <span className="text-sm font-bold text-indigo-400">
+                <span className="text-sm font-bold text-[#3E5F44]">
                   {item.step}
                 </span>
                 <h3 className="mt-3 text-lg font-semibold text-white">
@@ -166,7 +166,7 @@ export default function HomePage() {
                     key={feature}
                     className="flex items-center gap-2 text-sm text-zinc-300"
                   >
-                    <span className="text-indigo-400" aria-hidden="true">
+                    <span className="text-[#3E5F44]" aria-hidden="true">
                       &#10003;
                     </span>
                     {feature}
@@ -177,15 +177,15 @@ export default function HomePage() {
                 href={PER_CONTRACT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-8 block w-full rounded-xl border border-zinc-700 px-6 py-3 text-center font-semibold text-zinc-200 transition hover:border-zinc-500 hover:text-white"
+                className="mt-8 block w-full rounded-xl border border-[#DDD6B9] px-6 py-3 text-center font-semibold text-[#DDD6B9] transition hover:border-[#DDD6B9]/80 hover:text-white"
               >
                 Buy single contract
               </a>
             </div>
 
             {/* Monthly */}
-            <div className="rounded-2xl border border-indigo-500 bg-indigo-950/30 p-8">
-              <span className="mb-4 inline-block rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white">
+            <div className="rounded-2xl border border-[#3E5F44] bg-[#3E5F44]/10 p-8">
+              <span className="mb-4 inline-block rounded-full bg-[#3E5F44] px-3 py-1 text-xs font-medium text-white">
                 Most popular
               </span>
               <h3 className="text-xl font-semibold text-white">Monthly</h3>
@@ -205,7 +205,7 @@ export default function HomePage() {
                     key={feature}
                     className="flex items-center gap-2 text-sm text-zinc-300"
                   >
-                    <span className="text-indigo-400" aria-hidden="true">
+                    <span className="text-[#3E5F44]" aria-hidden="true">
                       &#10003;
                     </span>
                     {feature}
@@ -216,7 +216,7 @@ export default function HomePage() {
                 href={MONTHLY_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-8 block w-full rounded-xl bg-indigo-600 px-6 py-3 text-center font-semibold text-white transition hover:bg-indigo-500"
+                className="mt-8 block w-full rounded-xl bg-[#3E5F44] px-6 py-3 text-center font-semibold text-white transition hover:bg-[#4a7252]"
               >
                 Start monthly plan
               </a>
@@ -239,7 +239,7 @@ export default function HomePage() {
           </p>
           <a
             href="/auth/signup"
-            className="mt-8 inline-block rounded-xl bg-indigo-600 px-8 py-4 font-semibold text-white transition hover:bg-indigo-500"
+            className="mt-8 inline-block rounded-xl bg-[#3E5F44] px-8 py-4 font-semibold text-white transition hover:bg-[#4a7252]"
           >
             Generate your first contract
           </a>

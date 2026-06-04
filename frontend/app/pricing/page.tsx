@@ -7,7 +7,7 @@ const plans = [
   {
     id: "per_contract",
     name: "Single Contract",
-    price: "\u20b91,499",
+    price: "₹1,499",
     period: "one-time",
     description: "Perfect for freelancers with an occasional project.",
     features: [
@@ -24,7 +24,7 @@ const plans = [
   {
     id: "monthly",
     name: "Monthly",
-    price: "\u20b92,499",
+    price: "₹2,499",
     period: "per month",
     description: "For active freelancers who draft contracts regularly.",
     features: [
@@ -63,12 +63,12 @@ export default function PricingPage() {
               className={[
                 "rounded-2xl border p-8",
                 plan.highlight
-                  ? "border-indigo-500 bg-indigo-950/30"
+                  ? "border-[#3E5F44] bg-[#3E5F44]/10"
                   : "border-zinc-800 bg-zinc-900",
               ].join(" ")}
             >
               {plan.highlight && (
-                <span className="mb-4 inline-block rounded-full bg-indigo-600 px-3 py-1 text-xs font-medium text-white">
+                <span className="mb-4 inline-block rounded-full bg-[#3E5F44] px-3 py-1 text-xs font-medium text-white">
                   Most Popular
                 </span>
               )}
@@ -88,7 +88,7 @@ export default function PricingPage() {
                     key={feature}
                     className="flex items-center gap-2 text-sm text-zinc-300"
                   >
-                    <span className="text-indigo-400" aria-hidden="true">
+                    <span className="text-[#3E5F44]" aria-hidden="true">
                       &#10003;
                     </span>
                     {feature}
@@ -103,8 +103,8 @@ export default function PricingPage() {
                 className={[
                   "mt-8 block w-full rounded-xl px-6 py-3 text-center font-semibold transition",
                   plan.highlight
-                    ? "bg-indigo-600 text-white hover:bg-indigo-500"
-                    : "border border-zinc-700 text-zinc-200 hover:border-zinc-500 hover:text-white",
+                    ? "bg-[#3E5F44] text-white hover:bg-[#4a7252]"
+                    : "border border-[#DDD6B9] text-[#DDD6B9] hover:border-[#DDD6B9]/80 hover:text-white",
                 ].join(" ")}
               >
                 {plan.cta}

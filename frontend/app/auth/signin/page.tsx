@@ -48,7 +48,7 @@ export default function SignInPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-[#3E5F44] focus:ring-1 focus:ring-[#3E5F44]"
               />
             </div>
             <div>
@@ -65,7 +65,7 @@ export default function SignInPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+                className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-[#3E5F44] focus:ring-1 focus:ring-[#3E5F44]"
               />
             </div>
             {error && (
@@ -74,14 +74,14 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-500 disabled:opacity-50"
+              className="w-full rounded-xl bg-[#3E5F44] px-6 py-3 font-semibold text-white transition hover:bg-[#4a7252] disabled:opacity-50"
             >
               {loading ? "Signing in…" : "Sign in"}
             </button>
           </form>
           <p className="mt-6 text-center text-sm text-zinc-500">
             No account?{" "}
-            <a href="/auth/signup" className="text-indigo-400 hover:text-indigo-300">
+            <a href="/auth/signup" className="text-[#3E5F44] hover:text-[#4a7252]">
               Sign up free
             </a>
           </p>
