@@ -42,11 +42,80 @@
 ### Pending / not yet done
 
 - **Doppler `doppler` CLI** not in shell PATH in this dev environment — secrets confirmed present at Doppler dashboard level. Production Render reads them via the Doppler integration automatically. No local `doppler run` check was possible.
-- **Supabase migration** `003_webhooks_log.sql` must be applied manually via Supabase dashboard or `supabase db push` before webhooks are logged in production.
+- **Supabase migration** `003_webhooks_log.sql` must be applied manually via Supabase dashboard — SQL in Session 7 notes below.
 - **`NEXT_PUBLIC_CHECKOUT_PER_CONTRACT` / `NEXT_PUBLIC_CHECKOUT_MONTHLY`** env vars must be set in Vercel for the pricing buttons to show real LS URLs (not `#`).
 - **`NEXT_PUBLIC_SITE_URL`** in Vercel still pending from Session 5.
-- **Real user auth** in dashboard: `user_email` is currently hardcoded to `anonymous@contractforge.io`. Replace with Supabase session email when auth flow is wired to dashboard.
 - E-signature flow (Phase 3).
+
+---
+
+## [2026-06-04T00:00:00Z] Session 7 — API URL + email + brand colours
+
+**Status:** COMPLETE — commit `32db549`
+
+### What was done
+
+| Task | Status |
+|---|---|
+| TASK 1 — Migration 003 SQL provided for manual run | ✅ SQL below |
+| TASK 2 — API URL verification (already correct) | ✅ `NEXT_PUBLIC_API_URL` was already set |
+| TASK 3 — Hardcoded email replaced with Supabase session email | ✅ |
+| TASK 4 — Brand colours applied (Hunter Green #3E5F44, Sand #DDD6B9) | ✅ |
+
+### TASK 1 — Migration 003 SQL (run in Supabase dashboard → SQL editor)
+
+```sql
+CREATE TABLE IF NOT EXISTS webhooks_log (
+  id          uuid      DEFAULT gen_random_uuid() PRIMARY KEY,
+  event_type  text      NOT NULL,
+  lemon_squeezy_id text,
+  payload     jsonb,
+  received_at timestamptz DEFAULT now(),
+  processed   boolean   DEFAULT false,
+  error       text
+);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'subscriptions' AND column_name = 'subscription_ends_at'
+  ) THEN
+    ALTER TABLE subscriptions ADD COLUMN subscription_ends_at timestamptz;
+  END IF;
+END $$;
+```
+
+### TASK 3 — Email fix details
+
+- `dashboard/page.tsx`: now imports `supabase`, calls `getSession()` in `useEffect`, passes real email to both billing fetch and `ItemForm`
+- `ItemForm.tsx`: accepts `userEmail?: string` prop, uses it in POST body (fallback to `anonymous@contractforge.io` if unauthenticated)
+
+### TASK 4 — Brand colour mapping applied
+
+| Old | New | Used for |
+|---|---|---|
+| `bg-indigo-600` | `bg-[#3E5F44]` | All primary buttons |
+| `hover:bg-indigo-500` | `hover:bg-[#4a7252]` | Button hover states |
+| `text-indigo-400` | `text-[#3E5F44]` | Links, checkmarks, step numbers |
+| `border-indigo-500` | `border-[#3E5F44]` | Highlight card borders |
+| `border-zinc-7xx text-zinc-2xx` | `border-[#DDD6B9] text-[#DDD6B9]` | Secondary/outline buttons |
+| `focus:border-indigo-500` | `focus:border-[#3E5F44]` | Form field focus |
+
+Files changed: `ItemForm.tsx`, `dashboard/page.tsx`, `pricing/page.tsx`, `page.tsx`, `signin/page.tsx`, `signup/page.tsx`, `refund/page.tsx`, `terms/page.tsx`, `privacy/page.tsx`, `PaywallModal.tsx`
+
+### Done-state
+
+| Criterion | Result |
+|---|---|
+| `pytest -x -q` — 9 tests | ✅ 9/9 green |
+| Zero `indigo-*` Tailwind classes remaining | ✅ |
+| `user_email` uses real Supabase session | ✅ |
+| API URL uses `NEXT_PUBLIC_API_URL` | ✅ (was already correct) |
+
+### Test URL (after Vercel deploys)
+
+`https://contractforge-ai-contract-and-a3425.vercel.app/dashboard`
 
 **Production:**
 - Frontend: `https://contractforge-ai-contract-and-a3425.vercel.app`
