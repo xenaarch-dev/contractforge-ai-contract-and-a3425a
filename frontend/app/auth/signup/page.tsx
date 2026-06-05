@@ -13,9 +13,14 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!agreedToTerms) {
+      setError("You must agree to the Terms of Service and Privacy Policy to continue.");
+      return;
+    }
     setError(null);
     setLoading(true);
     const { error: err } = await supabase.auth.signUp({
@@ -101,12 +106,34 @@ export default function SignUpPage() {
                 className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2.5 text-sm text-white placeholder-zinc-500 outline-none transition focus:border-[#3E5F44] focus:ring-1 focus:ring-[#3E5F44]"
               />
             </div>
+            <div className="flex items-start gap-3">
+              <input
+                id="terms"
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={(e) => {
+                  setAgreedToTerms(e.target.checked);
+                  if (e.target.checked) setError(null);
+                }}
+                className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-[#3E5F44]"
+              />
+              <label htmlFor="terms" className="text-sm text-zinc-400 leading-snug">
+                I agree to the{" "}
+                <a href="/terms" target="_blank" className="text-[#3E5F44] hover:text-[#4a7252] underline">
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a href="/privacy" target="_blank" className="text-[#3E5F44] hover:text-[#4a7252] underline">
+                  Privacy Policy
+                </a>
+              </label>
+            </div>
             {error && (
               <p className="text-sm text-red-400">{error}</p>
             )}
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreedToTerms}
               className="w-full rounded-xl bg-[#3E5F44] px-6 py-3 font-semibold text-white transition hover:bg-[#4a7252] disabled:opacity-50"
             >
               {loading ? "Creating account…" : "Create free account"}
