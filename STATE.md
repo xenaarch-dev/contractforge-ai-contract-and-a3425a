@@ -1,5 +1,60 @@
 # ContractForge — Build State
 
+## [2026-06-06T00:00:00Z] Session 8 — Bug audit + EOD
+
+**Status:** COMPLETE
+
+### What was done
+
+All three bugs in the Session 8 brief were already resolved in prior sessions. Session 8 was a full audit pass to confirm this.
+
+| Task | Status |
+|---|---|
+| Bug 1 — Webhook users→subscriptions | ✅ Already fixed (Session 6). No `webhooks.py` exists; handler is in `billing.py`, queries `subscriptions` by `user_email`. |
+| Bug 2 — Billing status users→subscriptions | ✅ Already fixed (Session 6). `GET /billing/status` queries `subscriptions` by `user_email`. |
+| Bug 3 — Dashboard hardcoded email | ✅ Already fixed (Session 7). `dashboard/page.tsx` uses `supabase.auth.getSession()`. |
+| Test suite | ✅ 9/9 green (`python3 -m pytest backend/tests/ -x -q`) |
+| Hardcoded email scan (`grep @gmail @example placeholder`) | ✅ Clean — only `placeholder` in password input attrs |
+| `BUGS.md` created | ✅ New file — documents open issues + resolved history |
+
+### Done-state
+
+| Criterion | Result |
+|---|---|
+| `pytest -x -q` — 9 tests | ✅ 9/9 green |
+| No `users` table references in backend routers | ✅ |
+| Dashboard email from real Supabase session | ✅ |
+| No hardcoded emails in frontend `.tsx` | ✅ |
+| `BUGS.md` with open issues documented | ✅ |
+
+### Pending (carry-forward)
+
+- **Supabase migration 003** (`webhooks_log` + `subscription_ends_at`) — SQL in Session 7 notes. Must be run in Supabase dashboard → SQL editor.
+- **Vercel env vars** — `NEXT_PUBLIC_CHECKOUT_PER_CONTRACT`, `NEXT_PUBLIC_CHECKOUT_MONTHLY`, `NEXT_PUBLIC_SITE_URL` must be set.
+- **`contractforge.co.in` domain** — custom domain + SSL status unknown. Configure in Vercel → Domains.
+- **QA on `contractforge.co.in`** — browser QA pass blocked until domain + SSL confirmed live.
+- **E-signature flow** — Phase 3, not started.
+
+---
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ContractForge EOD // Day 152 (2026-06-06)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Bug 1 fixed (webhook subscriptions) — already done in Session 6
+✅ Bug 2 fixed (billing subscriptions) — already done in Session 6
+✅ Bug 3 fixed (dashboard real email) — already done in Session 7
+❌ QA on contractforge.co.in — blocked: domain/SSL not confirmed live
+❌ SSL live on contractforge.co.in — status unknown, not configured in repo
+
+COMMITS: ec863c5 (last) — feat: add T&C checkbox to signup
+BUGS FOUND IN QA: See BUGS.md — 4 open issues (env vars, migration, domain)
+DOMAIN STATUS: Not configured in Vercel yet — pending user action
+MRR: ₹0 | CUSTOMERS: 0 | LS: pending
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+---
+
+
 ## [2026-06-03T07:06:00Z] Session 6 — Lemon Squeezy wiring
 
 **Status:** COMPLETE
