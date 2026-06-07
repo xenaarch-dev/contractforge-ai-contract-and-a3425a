@@ -18,12 +18,12 @@ All three bugs listed in the Session 8 brief were already resolved in prior sess
 
 ### Open issues (not yet testable in browser)
 
-| # | Severity | Location | Description | Expected | Actual |
-|---|---|---|---|---|---|
-| 4 | HIGH | Vercel env vars | `NEXT_PUBLIC_CHECKOUT_PER_CONTRACT` and `NEXT_PUBLIC_CHECKOUT_MONTHLY` not set | Pricing buttons show real Lemon Squeezy checkout URLs | Buttons use `#` fallback |
-| 5 | MEDIUM | Supabase | Migration `003_webhooks_log.sql` must be applied manually | `webhooks_log` table + `subscription_ends_at` column exist in production | Not confirmed applied |
-| 6 | MEDIUM | Vercel env vars | `NEXT_PUBLIC_SITE_URL` not confirmed set | Email confirmation redirect goes to correct URL | May redirect to Vercel default |
-| 7 | UNKNOWN | Vercel / domain registrar | `contractforge.co.in` custom domain + SSL status | HTTPS green lock on custom domain | Status unknown — not set up in repo |
+| # | Severity | Location | Description | Expected | Actual | Status |
+|---|---|---|---|---|---|---|
+| 4 | HIGH | Vercel env vars | `NEXT_PUBLIC_CHECKOUT_PER_CONTRACT` and `NEXT_PUBLIC_CHECKOUT_MONTHLY` not set | Pricing buttons show real Lemon Squeezy checkout URLs | Buttons use `#` fallback | ✅ **FIXED Session 9** — already set; trailing `\n` on MONTHLY also fixed |
+| 5 | MEDIUM | Supabase | Migration `003_webhooks_log.sql` must be applied manually | `webhooks_log` table + `subscription_ends_at` column exist in production | Not confirmed applied | ⏳ **Pending user action** — SQL shown in STATE.md Session 7 |
+| 6 | MEDIUM | Vercel env vars | `NEXT_PUBLIC_SITE_URL` not confirmed set | Email confirmation redirect goes to correct URL | May redirect to Vercel default | ✅ **FIXED Session 9** — updated to `https://www.contractforge.co.in` |
+| 7 | UNKNOWN | Vercel / domain registrar | `contractforge.co.in` custom domain + SSL status | HTTPS green lock on custom domain | Status unknown — not set up in repo | ✅ **FIXED by user** — domain connected to Vercel, SSL generating |
 
 ---
 

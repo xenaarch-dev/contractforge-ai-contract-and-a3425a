@@ -1,5 +1,39 @@
 # ContractForge — Build State
 
+## [2026-06-07T00:00:00Z] Session 9 — Env vars + domain + redeploy
+
+**Status:** COMPLETE
+
+### What was done
+
+| Task | Status | Detail |
+|---|---|---|
+| Issue 4 — domain | ✅ User action | `contractforge.co.in` connected to Vercel, SSL generating |
+| Issue 1 — `NEXT_PUBLIC_CHECKOUT_*` env vars | ✅ Already set | Found via Vercel API; confirmed correct values in production |
+| Issue 1b — `NEXT_PUBLIC_CHECKOUT_MONTHLY` trailing `\n` | ✅ Fixed | PATCH via Vercel API (env id `esIYMnRBihPrRku4`) |
+| Issue 3 — `NEXT_PUBLIC_SITE_URL` | ✅ Fixed | Updated to `https://www.contractforge.co.in` via Vercel API (env id `ZQkJ3Iy4fRWn5PPF`) |
+| Redeploy | ✅ Triggered | Deployment `dpl_bQVLxL5aRwS21nrTNzWKqktcEfDY` — BUILDING at time of commit |
+
+### Doppler → Vercel mapping confirmed
+
+| Doppler key | Vercel key | Value |
+|---|---|---|
+| `LS_CHECKOUT_PER_CONTRACT` | `NEXT_PUBLIC_CHECKOUT_PER_CONTRACT` | `https://contractforge.lemonsqueezy.com/checkout/buy/295f4732-a548-4062-bdb1-b589a096c277` |
+| `LS_CHECKOUT_MONTHLY` | `NEXT_PUBLIC_CHECKOUT_MONTHLY` | `https://contractforge.lemonsqueezy.com/checkout/buy/9e263419-18ac-4129-86c0-f2519178a489` |
+
+### Real Vercel project ID (corrected from memory)
+
+`prj_PMWAhvx7fvzaSJp9R7DgRQHl7OoB` (note lowercase `l` before `7` — old memory had `1`)
+Team: `team_zYPsi9Di6UqPCVkWN73XeaC3`
+
+### Pending
+
+- **Supabase migration 003** — still needs manual run in Supabase SQL editor (SQL in Session 7 notes)
+- **SSL on contractforge.co.in** — generating, may take up to 24 hours; check Vercel → Domains
+- **QA pass** — full browser QA on `contractforge.co.in` once SSL is confirmed green
+
+---
+
 ## [2026-06-06T00:00:00Z] Session 8 — Bug audit + EOD
 
 **Status:** COMPLETE
