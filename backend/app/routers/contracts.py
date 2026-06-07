@@ -276,8 +276,21 @@ def _build_pdf(contract_id: str, req: ContractExportRequest) -> bytes:
         )
     )
 
-    # 8 — SIGNATURE BLOCK (two-column)
-    story.append(Paragraph("7. SIGNATURES", sec))
+    # 8 — ENTIRE AGREEMENT
+    story.append(Paragraph("7. ENTIRE AGREEMENT", sec))
+    story.append(
+        Paragraph(
+            "This Agreement constitutes the entire agreement between the parties with respect to "
+            "its subject matter and supersedes all prior negotiations, representations, warranties, "
+            "and understandings of the parties with respect thereto. No modification or amendment "
+            "of this Agreement shall be effective unless made in writing and signed by authorised "
+            "representatives of both parties.",
+            body,
+        )
+    )
+
+    # 9 — SIGNATURE BLOCK (two-column)
+    story.append(Paragraph("8. SIGNATURES", sec))
     story.append(
         Paragraph(
             "By signing below, both parties confirm they have read, understood, and agreed to "
