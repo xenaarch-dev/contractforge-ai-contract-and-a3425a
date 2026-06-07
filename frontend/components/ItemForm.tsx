@@ -33,8 +33,13 @@ export function ItemForm({
   userEmail?: string;
 }) {
   const [generated, setGenerated] = useState<string | null>(null);
+  const [lastResult, setLastResult] = useState<ContractResult | null>(null);
+  const [lastValues, setLastValues] = useState<FormValues | null>(null);
   const [paywall, setPaywall] = useState<PaywallInfo | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
   const { register, handleSubmit, reset, formState } = useForm<FormValues>({
     resolver: zodResolver(Schema),
     defaultValues: { jurisdiction: "India" },
@@ -67,10 +72,65 @@ export function ItemForm({
     }
 
     const data: ContractResult = await r.json();
+    // Save result + values before reset so the download handler can use them
+    setLastResult(data);
+    setLastValues(values);
     setGenerated(data.content);
     onCreated(data);
     reset();
   });
+
+  const handleDownload = async () => {
+    if (!lastResult || !lastValues) return;
+    setDownloading(true);
+    setDownloadError(null);
+
+    try {
+      // Parse scope into individual deliverables (one per non-empty line)
+      const deliverables = lastValues.scope
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+      const exportPayload = {
+        user_email: userEmail || "anonymous@contractforge.io",
+        client_name: lastValues.client_name,
+        client_company: lastValues.client_company,
+        amount: lastValues.fee,
+        timeline: lastValues.timeline,
+        payment_schedule: lastValues.payment_terms,
+        deliverables: deliverables.length > 0 ? deliverables : [lastValues.scope],
+      };
+
+      const r = await fetch(
+        `${API_BASE}/contracts/${lastResult.id}/export`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(exportPayload),
+        }
+      );
+
+      if (!r.ok) {
+        setDownloadError(`Export failed (HTTP ${r.status}). Please try again.`);
+        return;
+      }
+
+      const blob = await r.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `contract_${lastResult.id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setDownloadError("Download failed. Please try again.");
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -152,7 +212,19 @@ export function ItemForm({
 
       {generated && (
         <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6">
-          <h3 className="mb-3 text-sm font-semibold text-zinc-300">Generated Contract</h3>
+          <div className="mb-3 flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-zinc-300">Generated Contract</h3>
+            <button
+              onClick={handleDownload}
+              disabled={downloading}
+              className="rounded-xl bg-[#3E5F44] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4a7252] disabled:opacity-60"
+            >
+              {downloading ? "Downloading…" : "Download PDF"}
+            </button>
+          </div>
+          {downloadError && (
+            <p className="mb-2 text-xs text-red-400">{downloadError}</p>
+          )}
           <pre className="overflow-x-auto whitespace-pre-wrap text-xs leading-relaxed text-zinc-400">{generated}</pre>
         </div>
       )}
