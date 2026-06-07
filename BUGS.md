@@ -88,6 +88,24 @@ All three bugs listed in the Session 8 brief were already resolved in prior sess
 
 ---
 
+### Session 11 (2026-06-07) — Freelancer data + markdown rendering
+
+**Bug B1 — HIGH — Freelancer name hardcoded as "Priya Sharma" in PDF** ✅ **FIXED**
+- **Location:** `frontend/components/ItemForm.tsx`
+- **Fix:** Added "Your Details" section to the contract form with three new fields — Your Name (required), Your City (required), Your GST Number (optional). The export payload now sends `freelancer_name`, `freelancer_gst`, and `freelancer_address` from form values. Hardcoded defaults gone.
+- **Tests:** 3 new backend pytest (name/GST/address assertions) + 4 new frontend vitest (field presence + payload wiring). 23 tests total, all green.
+- **Commit:** `8010b26`
+
+---
+
+**Bug B2 — MEDIUM — Raw markdown showing in web preview** ✅ **FIXED**
+- **Location:** `frontend/components/ItemForm.tsx` — generated contract `<pre>` block
+- **Fix:** Replaced `<pre>` with `ContractMarkdown` — a lightweight inline renderer. Handles `#`/`##` → `<h1>`/`<h2>`, `---` → `<hr>`, `**bold**` → `<strong>`, and paragraphs. Zero new dependencies.
+- **Tests:** 5 new frontend vitest tests asserting that `##`, `**`, and `---` render as HTML elements, not raw text.
+- **Commit:** `8010b26`
+
+---
+
 ### Resolved bugs (historical)
 
 | Session | Severity | Description |

@@ -1,5 +1,33 @@
 # ContractForge — Build State
 
+## [2026-06-07T03:00:00Z] Session 11 — Bug fixes B1 (freelancer fields) + B2 (markdown)
+
+**Status:** COMPLETE — 2 bugs fixed, 12 tests added (3 backend + 9 frontend); 23 total tests green
+
+### Fixes shipped
+
+| Bug | Severity | Fix | Commit |
+|---|---|---|---|
+| **B1** | HIGH | Add freelancer name/city/GST fields to form; wire to PDF export payload | `8010b26` |
+| **B2** | MEDIUM | Replace `<pre>` with `ContractMarkdown` inline renderer (h1/h2/hr/strong/p) | `8010b26` |
+
+### Test counts (all green)
+
+- Backend: 9 tests (`test_contracts.py`)
+- Frontend: 14 tests (`items.test.tsx`)
+
+### Still open
+
+| Bug | Notes |
+|---|---|
+| S9-5 | Email confirmation UX — user handles manually |
+
+### Next step
+
+`git push origin main` → Vercel auto-deploys → production smoke test
+
+---
+
 ## [2026-06-07T02:00:00Z] Session 10 — Bug fixes S9-1 through S9-4
 
 **Status:** COMPLETE — 4 bugs fixed, 11 tests added (6 backend + 5 frontend)
