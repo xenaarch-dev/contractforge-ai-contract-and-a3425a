@@ -1,5 +1,44 @@
 # ContractForge — Build State
 
+## [2026-06-07T02:00:00Z] Session 10 — Bug fixes S9-1 through S9-4
+
+**Status:** COMPLETE — 4 bugs fixed, 11 tests added (6 backend + 5 frontend)
+
+### Fixes shipped
+
+| Bug | Severity | Fix | Tests |
+|---|---|---|---|
+| S9-4 | LOW | Restored `⚡` emoji in page `<title>` (was `?`) — `frontend/app/layout.tsx` | — |
+| S9-3 | MEDIUM | Added ENTIRE AGREEMENT clause (section 7) to `_build_pdf()`; SIGNATURES → section 8 | 6 pytest passing |
+| S9-1 | HIGH | "Download PDF" button added to `ItemForm.tsx`; calls `POST /contracts/{id}/export`; triggers blob download | 2 vitest passing |
+| S9-2+S9-6 | HIGH+LOW | Export request now passes real form values: `client_name`, `client_company`, `amount`, `timeline`, `payment_schedule`, `deliverables` (scope split by newline) | 2 vitest passing |
+
+### Commits
+
+```
+291b50b fix: S9-4 — restore ⚡ emoji in page title (was rendering as ?)
+39d17b9 fix: S9-3 — add ENTIRE AGREEMENT clause to PDF builder; 6 tests green
+3e3b5a8 fix: S9-1 + S9-2 + S9-6 — PDF download button; wire real form data to export
+```
+
+### Test counts (all green)
+
+- Backend: 8 tests (6 new in `test_contracts.py`)
+- Frontend: 5 tests (4 new in `items.test.tsx`)
+
+### Still open
+
+| Bug | Notes |
+|---|---|
+| S9-5 | Email confirmation UX — user handles manually |
+
+### Next session
+
+- Trigger Vercel redeploy to ship fixes to production
+- E2E smoke: signup → generate → Download PDF → verify real client name appears in PDF
+
+---
+
 ## [2026-06-07T01:00:00Z] Session 9b — Full QA pass on contractforge.co.in
 
 **Status:** COMPLETE — 6 bugs found and documented

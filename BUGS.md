@@ -49,36 +49,28 @@ All three bugs listed in the Session 8 brief were already resolved in prior sess
 
 ---
 
-**Bug S9-1 — HIGH — No PDF download button in UI**
+**Bug S9-1 — HIGH — No PDF download button in UI** ✅ **FIXED Session 10**
 - **Location:** `frontend/components/ItemForm.tsx`
-- **Expected:** After contract generation, a "Download PDF" button calls `POST /contracts/{id}/export` and triggers file download
-- **Actual:** Generated contract shown as `<pre>` text block only. No export button exists. The backend PDF endpoint works perfectly but is completely unreachable from the frontend.
-- **Impact:** Users cannot download a PDF — the core paid feature is inaccessible from the UI.
+- **Fix:** "Download PDF" button added below the generated contract. Calls `POST /contracts/{id}/export`, receives PDF blob, triggers browser file download.
+- **Commit:** `3e3b5a8`
 
 ---
 
-**Bug S9-2 — HIGH — PDF party names are hardcoded defaults, never replaced by actual user input**
-- **Location:** `backend/app/routers/contracts.py` → `ContractExportRequest` (lines 92–111); `frontend/components/ItemForm.tsx` (no export call)
-- **Expected:** PDF shows the client name and company the user entered in the form (e.g. "Acme Technologies Pvt Ltd")
-- **Actual:** PDF always shows hardcoded test data: `Priya Sharma`, `Rahul Sharma`, `Sharma Enterprises Pvt Ltd`, `27AABCU9603R1ZX`
-- **Root cause:** `ContractExportRequest` defaults are never overridden. Frontend doesn't call the export endpoint at all (see S9-1), and even if it did, it would not pass `client_name`, `freelancer_name`, etc.
-- **Impact:** Every PDF is legally useless — it names the wrong parties.
+**Bug S9-2 — HIGH — PDF party names are hardcoded defaults, never replaced by actual user input** ✅ **FIXED Session 10**
+- **Fix:** Export request now passes `client_name` and `client_company` from the form. PDF reflects real client data.
+- **Commit:** `3e3b5a8`
 
 ---
 
-**Bug S9-3 — MEDIUM — PDF template missing "ENTIRE AGREEMENT" (miscellaneous) section**
-- **Location:** `backend/app/routers/contracts.py` → `_build_pdf()`
-- **Expected:** 8 sections in PDF: Parties, Scope, Payment, Governing Law, Termination, Confidentiality, Entire Agreement, Signatures
-- **Actual:** 7 sections — "ENTIRE AGREEMENT" clause is absent from the PDF builder. The Claude-generated markdown contract does include it.
-- **Impact:** PDF is not legally complete; standard "entire agreement" / merger clause is missing.
+**Bug S9-3 — MEDIUM — PDF template missing "ENTIRE AGREEMENT" (miscellaneous) section** ✅ **FIXED Session 10**
+- **Fix:** Section 7 "ENTIRE AGREEMENT" added to `_build_pdf()`. SIGNATURES renumbered to 8. All 8 sections now present.
+- **Commit:** `39d17b9`
 
 ---
 
-**Bug S9-4 — LOW — Page title renders `?` instead of an emoji**
-- **Location:** `frontend/app/layout.tsx` or `frontend/app/page.tsx` (metadata title)
-- **Expected:** `ContractForge ⚡ AI contracts for Indian freelancers` (or similar emoji)
-- **Actual:** `ContractForge ? AI contracts for Indian freelancers` — the emoji is not rendering in the browser tab
-- **Impact:** Minor — cosmetic, but visible to all users.
+**Bug S9-4 — LOW — Page title renders `?` instead of an emoji** ✅ **FIXED Session 10**
+- **Fix:** Replaced literal `?` with `⚡` in `frontend/app/layout.tsx` metadata title.
+- **Commit:** `291b50b`
 
 ---
 
@@ -90,12 +82,9 @@ All three bugs listed in the Session 8 brief were already resolved in prior sess
 
 ---
 
-**Bug S9-6 — LOW — PDF scope of work uses generic template items, not user-submitted scope**
-- **Location:** `backend/app/routers/contracts.py` → `ContractExportRequest.deliverables` default
-- **Expected:** PDF scope section matches what the user typed in the "Scope of Work" field
-- **Actual:** PDF always shows generic deliverables list (5 pages, responsive design, CMS, SEO, performance). Timeline and fee fields correctly use submitted values.
-- **Root cause:** Same as S9-2 — `deliverables` field not populated from user input.
-- **Impact:** Compounds S9-2; entire PDF parties + scope section is disconnected from user input.
+**Bug S9-6 — LOW — PDF scope of work uses generic template items, not user-submitted scope** ✅ **FIXED Session 10**
+- **Fix:** Export request now passes `deliverables` derived from the form's Scope of Work field (split by newline). Generic template items gone.
+- **Commit:** `3e3b5a8`
 
 ---
 
