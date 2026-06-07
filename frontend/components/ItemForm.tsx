@@ -8,6 +8,11 @@ import { z } from "zod";
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
 const Schema = z.object({
+  // Freelancer details
+  freelancer_name: z.string().min(2, "Required"),
+  freelancer_gst: z.string().optional().default(""),
+  freelancer_city: z.string().min(2, "Required"),
+  // Contract details
   project_type: z.string().min(2, "Required"),
   client_name: z.string().min(2, "Required"),
   client_company: z.string().min(1, "Required"),
@@ -42,7 +47,7 @@ export function ItemForm({
 
   const { register, handleSubmit, reset, formState } = useForm<FormValues>({
     resolver: zodResolver(Schema),
-    defaultValues: { jurisdiction: "India" },
+    defaultValues: { jurisdiction: "India", freelancer_gst: "" },
   });
 
   const onSubmit = handleSubmit(async (values) => {
@@ -94,8 +99,14 @@ export function ItemForm({
 
       const exportPayload = {
         user_email: userEmail || "anonymous@contractforge.io",
+        // Freelancer details from form
+        freelancer_name: lastValues.freelancer_name,
+        freelancer_gst: lastValues.freelancer_gst || "",
+        freelancer_address: `${lastValues.freelancer_city}, India`,
+        // Client details from form
         client_name: lastValues.client_name,
         client_company: lastValues.client_company,
+        // Contract terms from form
         amount: lastValues.fee,
         timeline: lastValues.timeline,
         payment_schedule: lastValues.payment_terms,
@@ -135,29 +146,94 @@ export function ItemForm({
   return (
     <div className="space-y-6">
       <form onSubmit={onSubmit} className="space-y-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Project Type" error={formState.errors.project_type?.message}>
-            <input {...register("project_type")} placeholder="e.g. Web Development" className={inputCls} />
-          </Field>
-          <Field label="Client Name" error={formState.errors.client_name?.message}>
-            <input {...register("client_name")} placeholder="Rahul Sharma" className={inputCls} />
-          </Field>
-          <Field label="Client Company" error={formState.errors.client_company?.message}>
-            <input {...register("client_company")} placeholder="Sharma Enterprises Pvt Ltd" className={inputCls} />
-          </Field>
-          <Field label="Fee (number)" error={formState.errors.fee?.message}>
-            <input {...register("fee")} type="number" placeholder="75000" className={inputCls} />
-          </Field>
-          <Field label="Payment Terms" error={formState.errors.payment_terms?.message}>
-            <input {...register("payment_terms")} placeholder="50% advance, 50% on delivery" className={inputCls} />
-          </Field>
-          <Field label="Timeline" error={formState.errors.timeline?.message}>
-            <input {...register("timeline")} placeholder="30 days from signing" className={inputCls} />
-          </Field>
+        {/* ── Your Details (freelancer) ─────────────────────────────── */}
+        <div>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Your Details
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Your Name" error={formState.errors.freelancer_name?.message}>
+              <input
+                {...register("freelancer_name")}
+                placeholder="Priya Mehta"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Your City" error={formState.errors.freelancer_city?.message}>
+              <input
+                {...register("freelancer_city")}
+                placeholder="Mumbai"
+                className={inputCls}
+              />
+            </Field>
+            <Field
+              label="Your GST Number (optional)"
+              error={formState.errors.freelancer_gst?.message}
+            >
+              <input
+                {...register("freelancer_gst")}
+                placeholder="27AABCU9603R1ZX"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+        </div>
+
+        {/* ── Contract Details ──────────────────────────────────────── */}
+        <div className="border-t border-zinc-800 pt-4">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-zinc-500">
+            Contract Details
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label="Project Type" error={formState.errors.project_type?.message}>
+              <input
+                {...register("project_type")}
+                placeholder="e.g. Web Development"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Client Name" error={formState.errors.client_name?.message}>
+              <input {...register("client_name")} placeholder="Rahul Sharma" className={inputCls} />
+            </Field>
+            <Field label="Client Company" error={formState.errors.client_company?.message}>
+              <input
+                {...register("client_company")}
+                placeholder="Sharma Enterprises Pvt Ltd"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Fee (₹)" error={formState.errors.fee?.message}>
+              <input
+                {...register("fee")}
+                type="number"
+                placeholder="75000"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Payment Terms" error={formState.errors.payment_terms?.message}>
+              <input
+                {...register("payment_terms")}
+                placeholder="50% advance, 50% on delivery"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Timeline" error={formState.errors.timeline?.message}>
+              <input
+                {...register("timeline")}
+                placeholder="30 days from signing"
+                className={inputCls}
+              />
+            </Field>
+          </div>
         </div>
 
         <Field label="Scope of Work" error={formState.errors.scope?.message}>
-          <textarea {...register("scope")} rows={3} placeholder="Describe deliverables…" className={inputCls} />
+          <textarea
+            {...register("scope")}
+            rows={3}
+            placeholder="Describe deliverables…"
+            className={inputCls}
+          />
         </Field>
 
         <Field label="Jurisdiction" error={formState.errors.jurisdiction?.message}>
@@ -225,14 +301,75 @@ export function ItemForm({
           {downloadError && (
             <p className="mb-2 text-xs text-red-400">{downloadError}</p>
           )}
-          <pre className="overflow-x-auto whitespace-pre-wrap text-xs leading-relaxed text-zinc-400">{generated}</pre>
+          <ContractMarkdown content={generated} />
         </div>
       )}
     </div>
   );
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+// ── Inline markdown renderer ───────────────────────────────────────────────────
+// Handles the subset Claude uses in contracts: #/## headings, ---, **bold**, paragraphs.
+
+function renderInline(text: string): React.ReactNode {
+  // Split on **bold** spans
+  const parts = text.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) =>
+    part.startsWith("**") && part.endsWith("**") ? (
+      <strong key={i}>{part.slice(2, -2)}</strong>
+    ) : (
+      part
+    )
+  );
+}
+
+export function ContractMarkdown({ content }: { content: string }) {
+  const lines = content.split("\n");
+  const nodes: React.ReactNode[] = [];
+
+  lines.forEach((line, i) => {
+    if (line.startsWith("## ")) {
+      nodes.push(
+        <h2
+          key={i}
+          className="mt-5 mb-1 text-sm font-bold uppercase tracking-wide text-zinc-100"
+        >
+          {line.slice(3)}
+        </h2>
+      );
+    } else if (line.startsWith("# ")) {
+      nodes.push(
+        <h1 key={i} className="mb-3 text-base font-bold text-zinc-100">
+          {line.slice(2)}
+        </h1>
+      );
+    } else if (/^[-*_]{3,}$/.test(line.trim())) {
+      nodes.push(<hr key={i} className="my-3 border-zinc-700" />);
+    } else if (line.trim() === "") {
+      nodes.push(<div key={i} className="h-1" />);
+    } else {
+      nodes.push(
+        <p key={i} className="text-sm leading-relaxed text-zinc-300">
+          {renderInline(line)}
+        </p>
+      );
+    }
+  });
+
+  return <div className="space-y-0.5">{nodes}</div>;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function Field({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <label className="mb-1 block text-xs font-medium text-zinc-400">{label}</label>
