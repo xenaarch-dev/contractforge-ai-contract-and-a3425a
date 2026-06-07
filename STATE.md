@@ -1,5 +1,42 @@
 # ContractForge — Build State
 
+## [2026-06-07T01:00:00Z] Session 9b — Full QA pass on contractforge.co.in
+
+**Status:** COMPLETE — 6 bugs found and documented
+
+### QA summary
+
+| Step | Result |
+|---|---|
+| Homepage HTTPS | ✅ |
+| Signup form | ✅ |
+| Signup submit → "check email" | ✅ |
+| Billing status / checkout URLs | ✅ Real LS URLs confirmed |
+| Contract generate (API) | ✅ 200, ₹, GST 18%, Mumbai, Indian Contract Act |
+| PDF export (API) | ✅ 200, 46,532 bytes, ₹ renders |
+| Paywall 402 (API) | ✅ Fires correctly |
+
+### Bugs found — see BUGS.md for full detail
+
+| ID | Severity | Summary |
+|---|---|---|
+| S9-1 | **HIGH** | **No PDF download button in UI** — backend works, frontend never calls export |
+| S9-2 | **HIGH** | **PDF party names are hardcoded** — always "Priya Sharma / Sharma Enterprises" |
+| S9-3 | MEDIUM | PDF missing "ENTIRE AGREEMENT" section (7 of 8 clauses only) |
+| S9-4 | LOW | Page title shows `?` instead of emoji |
+| S9-5 | MEDIUM | Email confirmation blocks immediate post-signup access |
+| S9-6 | LOW | PDF scope uses generic template items, not user-submitted scope |
+
+### Next session priorities (in order)
+
+1. **Fix S9-1** — Add "Download PDF" button to `ItemForm.tsx`; call `POST /contracts/{id}/export`; trigger browser file download
+2. **Fix S9-2 + S9-6** — Pass `client_name`, `client_company`, `scope`, `fee`, `payment_terms`, `timeline` from the generate form into the export request body
+3. **Fix S9-3** — Add ENTIRE AGREEMENT section to `_build_pdf()` in `contracts.py`
+4. **Fix S9-4** — Locate and fix the emoji in the page title (`layout.tsx` or `page.tsx` metadata)
+5. **Fix S9-5** — Evaluate disabling Supabase email confirmation (or auto-redirect after confirmation)
+
+---
+
 ## [2026-06-07T00:00:00Z] Session 9 — Env vars + domain + redeploy
 
 **Status:** COMPLETE
@@ -28,9 +65,7 @@ Team: `team_zYPsi9Di6UqPCVkWN73XeaC3`
 
 ### Pending
 
-- **Supabase migration 003** — still needs manual run in Supabase SQL editor (SQL in Session 7 notes)
-- **SSL on contractforge.co.in** — generating, may take up to 24 hours; check Vercel → Domains
-- **QA pass** — full browser QA on `contractforge.co.in` once SSL is confirmed green
+- **QA pass complete** — see Session 9b below and BUGS.md for all findings
 
 ---
 
