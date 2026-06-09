@@ -207,7 +207,7 @@ def test_webhook_invalid_hmac_returns_422(client):
     wrong_sig = _ls_sig("wrong-secret", body)
 
     resp = client.post(
-        "/webhooks/lemonsqueezy",
+        "/webhooks/lemon-squeezy",
         content=body,
         headers={
             "Content-Type": "application/json",
@@ -244,7 +244,7 @@ def test_webhook_order_created_inserts_subscription(client):
     sig = _ls_sig(secret, body)
 
     resp = client.post(
-        "/webhooks/lemonsqueezy",
+        "/webhooks/lemon-squeezy",
         content=body,
         headers={
             "Content-Type": "application/json",

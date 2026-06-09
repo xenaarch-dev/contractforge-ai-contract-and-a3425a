@@ -47,7 +47,7 @@ def _log_webhook(
         logger.error("webhooks_log insert failed: %s", exc)
 
 
-@router.post("/webhooks/lemonsqueezy")
+@router.post("/webhooks/lemon-squeezy")
 async def ls_webhook(request: Request) -> JSONResponse:
     payload = await request.body()
     signature = request.headers.get("X-Signature", "")

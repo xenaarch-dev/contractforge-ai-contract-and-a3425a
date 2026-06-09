@@ -56,6 +56,6 @@ def healthz() -> dict:
 
 
 app.include_router(health.router)
-app.include_router(billing.router)          # /webhooks/lemonsqueezy (no prefix)
+app.include_router(billing.router)          # /webhooks/lemon-squeezy (no prefix)
 app.include_router(contracts.router)        # /contracts/...
 app.include_router(items.router, prefix="/api")
