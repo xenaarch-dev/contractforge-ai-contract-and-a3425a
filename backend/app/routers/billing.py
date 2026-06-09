@@ -78,7 +78,10 @@ async def ls_webhook(request: Request) -> JSONResponse:
     error_msg: str | None = None
     try:
         attrs = data.get("data", {}).get("attributes", {})
-        email = attrs.get("user_email", "")
+        email = (
+            data.get("meta", {}).get("custom_data", {}).get("user_email")
+            or attrs.get("user_email", "")
+        )
 
         if event_type == "subscription_created":
             supabase.table("subscriptions").upsert(
