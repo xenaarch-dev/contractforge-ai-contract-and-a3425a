@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import UpgradeModal from "./UpgradeModal";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "";
 
@@ -260,30 +261,11 @@ export function ItemForm({
       )}
 
       {paywall && (
-        <div className="rounded-2xl border border-amber-700 bg-amber-950/30 p-6">
-          <p className="mb-4 font-semibold text-amber-300">{paywall.message}</p>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <a
-              href={paywall.checkout_per_contract}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 rounded-xl border border-[#DDD6B9] px-4 py-2 text-center text-sm font-medium text-[#DDD6B9] transition hover:border-[#DDD6B9]/80"
-            >
-              Buy Single Contract — ₹1,499
-            </a>
-            <a
-              href={paywall.checkout_monthly}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-1 rounded-xl bg-[#3E5F44] px-4 py-2 text-center text-sm font-semibold text-white transition hover:bg-[#4a7252]"
-            >
-              Subscribe Monthly — ₹2,499/mo
-            </a>
-          </div>
-          <p className="mt-3 text-xs text-zinc-500">
-            Secure payment via Lemon Squeezy · GST invoice included
-          </p>
-        </div>
+        <UpgradeModal
+          checkoutMonthly={paywall.checkout_monthly}
+          checkoutSingle={paywall.checkout_per_contract}
+          onClose={() => setPaywall(null)}
+        />
       )}
 
       {generated && (
