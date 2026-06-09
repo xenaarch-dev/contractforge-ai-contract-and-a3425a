@@ -29,16 +29,28 @@ class Settings(BaseSettings):
     )
     lemonsqueezy_webhook_secret: str = Field(
         "",
-        validation_alias=AliasChoices("LEMON_SQUEEZY_WEBHOOK_SECRET", "LEMONSQUEEZY_WEBHOOK_SECRET"),
+        validation_alias=AliasChoices(
+            "LEMON_SQUEEZY_WEBHOOK_SECRET",
+            "LEMONSQUEEZY_WEBHOOK_SECRET",
+            "LEMONSQUEEZY_SIGNING_SECRET",
+        ),
     )
     lemonsqueezy_store_id: str = ""
     lemonsqueezy_checkout_per_contract: str = Field(
         "",
-        validation_alias=AliasChoices("LS_CHECKOUT_PER_CONTRACT", "LEMONSQUEEZY_CHECKOUT_PER_CONTRACT"),
+        validation_alias=AliasChoices(
+            "LS_CHECKOUT_PER_CONTRACT",
+            "LEMONSQUEEZY_CHECKOUT_PER_CONTRACT",
+            "LS_SINGLE_URL",
+        ),
     )
     lemonsqueezy_checkout_monthly: str = Field(
         "",
-        validation_alias=AliasChoices("LS_CHECKOUT_MONTHLY", "LEMONSQUEEZY_CHECKOUT_MONTHLY"),
+        validation_alias=AliasChoices(
+            "LS_CHECKOUT_MONTHLY",
+            "LEMONSQUEEZY_CHECKOUT_MONTHLY",
+            "LS_MONTHLY_URL",
+        ),
     )
     lemonsqueezy_test_mode: str = "true"
 
