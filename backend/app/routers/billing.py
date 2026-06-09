@@ -59,7 +59,7 @@ async def ls_webhook(request: Request) -> JSONResponse:
     if not _verify_ls_signature(payload, signature, secret):
         logger.warning("LS webhook invalid signature for event=%s", event_type)
         _log_webhook(supabase, event_type or "unknown", None, {}, processed=False, error="invalid_signature")
-        raise HTTPException(status_code=422, detail="Invalid signature")
+        return JSONResponse({"status": "ok", "note": "invalid_signature"})
 
     try:
         data = json.loads(payload)

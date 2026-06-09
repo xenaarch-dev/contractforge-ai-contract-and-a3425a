@@ -198,8 +198,8 @@ def test_generate_second_use_returns_402(client):
     assert "₹2,499" in detail["message"]
 
 
-def test_webhook_invalid_hmac_returns_422(client):
-    """Webhook with wrong HMAC signature → 422, logged."""
+def test_webhook_invalid_hmac_returns_200(client):
+    """Webhook with wrong HMAC signature → 200 (LS must not see error), logged internally."""
     from backend.app.config import settings as _s
     _s.lemonsqueezy_webhook_secret = "real-secret-abc"
 
@@ -215,7 +215,8 @@ def test_webhook_invalid_hmac_returns_422(client):
             "X-Event-Name": "order_created",
         },
     )
-    assert resp.status_code == 422
+    assert resp.status_code == 200
+    assert resp.json().get("note") == "invalid_signature"
     # Must be logged with error
     logs = [e for e in _mock_sb.webhooks_log if e.get("error") == "invalid_signature"]
     assert len(logs) == 1
