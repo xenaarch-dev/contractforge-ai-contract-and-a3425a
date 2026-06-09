@@ -1,7 +1,11 @@
 const PER_CONTRACT_URL =
-  process.env.NEXT_PUBLIC_CHECKOUT_PER_CONTRACT ?? "#";
+  process.env.NEXT_PUBLIC_CHECKOUT_PER_CONTRACT ??
+  process.env.LS_SINGLE_URL ??
+  "#";
 const MONTHLY_URL =
-  process.env.NEXT_PUBLIC_CHECKOUT_MONTHLY ?? "#";
+  process.env.NEXT_PUBLIC_CHECKOUT_MONTHLY ??
+  process.env.LS_MONTHLY_URL ??
+  "#";
 
 const plans = [
   {
