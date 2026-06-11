@@ -56,6 +56,7 @@ class Settings(BaseSettings):
 
     anthropic_api_key: str = ""
     sentry_dsn_backend: str = ""
+    agent_trigger_key: str = ""
 
 
 @lru_cache
