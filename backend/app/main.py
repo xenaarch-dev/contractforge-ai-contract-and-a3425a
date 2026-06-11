@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
-from .routers import billing, contracts, health, items
+from .routers import agents, billing, contracts, health, items
 from .sentry import init_sentry
 
 logging.basicConfig(level=settings.log_level)
@@ -59,3 +59,4 @@ app.include_router(health.router)
 app.include_router(billing.router)          # /webhooks/lemon-squeezy (no prefix)
 app.include_router(contracts.router)        # /contracts/...
 app.include_router(items.router, prefix="/api")
+app.include_router(agents.router)           # /agents/...
