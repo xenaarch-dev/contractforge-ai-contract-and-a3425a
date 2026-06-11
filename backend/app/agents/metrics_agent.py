@@ -60,20 +60,12 @@ class ContractForgeMetricsAgent:
         }
 
     def _count_users(self) -> int:
-        result = self.supabase.table("users").select("id", count="exact").execute()
-        return result.count if result.count is not None else len(result.data)
+        users = self.supabase.auth.admin.list_users()
+        return len(users) if users else 0
 
-    def _count_items_on_date(self, d: date) -> int:
-        start_ts = datetime.combine(d, datetime.min.time()).isoformat()
-        end_ts = datetime.combine(d + timedelta(days=1), datetime.min.time()).isoformat()
-        result = (
-            self.supabase.table("items")
-            .select("id", count="exact")
-            .gte("created_at", start_ts)
-            .lt("created_at", end_ts)
-            .execute()
-        )
-        return result.count if result.count is not None else len(result.data)
+    def _count_items_on_date(self, d) -> int:
+        # contracts table not yet created — Sprint Day 3
+        return 0
 
     def _subscription_metrics(self) -> tuple[int, float]:
         result = (
