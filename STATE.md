@@ -1,5 +1,22 @@
 # ContractForge — Build State
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SPRINT DAY 1 — Day 156 — June 11 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ agent_logs migration created (supabase/migrations/004_agent_logs.sql)
+✅ ContractForgeMetricsAgent implemented + tested (4/4 tests pass)
+✅ POST /agents/metrics/run endpoint (X-Agent-Key auth)
+✅ GET /agents/metrics/latest endpoint
+✅ GitHub Actions workflow committed (.github/workflows/daily-agents.yml)
+COMMITS: e7b845c  24a14ed  21200e9  5d47e0b
+TESTS: 22 total green (18 existing + 4 new agent tests)
+PENDING MANUAL: Supabase SQL, Doppler secret, GitHub secret (see below)
+NEXT SESSION (Day 157): merge to main → Render redeploys
+  → test live endpoint → OutreachDraftAgent scaffold
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+xenarch // ContractForge // Autonomy Sprint Day 1 of 7
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 ## [2026-06-07T03:00:00Z] Session 11 — Bug fixes B1 (freelancer fields) + B2 (markdown)
 
 **Status:** COMPLETE — 2 bugs fixed, 12 tests added (3 backend + 9 frontend); 23 total tests green

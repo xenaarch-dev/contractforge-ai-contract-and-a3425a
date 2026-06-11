@@ -4,6 +4,14 @@
 
 ## Todo
 
+### Autonomy Sprint (Day 157 next)
+- [ ] **SP-D1-MANUAL-A** [HIGH] Apply agent_logs migration in Supabase SQL editor (SQL in STATE.md / sprint brief)
+- [ ] **SP-D1-MANUAL-B** [HIGH] Set AGENT_TRIGGER_KEY in Doppler: `doppler secrets set AGENT_TRIGGER_KEY=$(openssl rand -hex 32) --project contractforge --config prd`
+- [ ] **SP-D1-MANUAL-C** [HIGH] Set AGENT_TRIGGER_KEY in GitHub secrets: repo → Settings → Secrets → Actions
+- [ ] **SP-D2** [HIGH] Merge autonomy-sprint → main → Render redeploys → smoke test live endpoint
+- [ ] **SP-D2-AGENT** [MEDIUM] OutreachDraftAgent scaffold (Sprint Day 2)
+
+### Existing
 - [ ] **S12-SMOKE** [HIGH] Production smoke test for B1+B2 — verify freelancer fields + markdown rendering on contractforge.co.in
 - [ ] **S9-5** [MEDIUM] Email confirmation UX — evaluate disabling Supabase email confirmation or auto-redirect after click (user-handles)
 - [ ] **PHASE3** [MEDIUM] E-signature flow — Phase 3, not started
