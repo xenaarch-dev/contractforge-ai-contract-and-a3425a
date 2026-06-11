@@ -1,0 +1,26 @@
+name: ContractForge Daily Agents
+
+on:
+  schedule:
+    - cron: '30 0 * * *'   # 00:30 UTC = 06:00 IST
+  workflow_dispatch:         # manual trigger for testing
+
+jobs:
+  metrics-agent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger Metrics Agent
+        run: |
+          HTTP_STATUS=$(curl -s -o /tmp/response.json -w "%{http_code}" \
+            -X POST \
+            -H "X-Agent-Key: ${{ secrets.AGENT_TRIGGER_KEY }}" \
+            -H "Content-Type: application/json" \
+            https://contractforge-ai-contract-and-a3425a.onrender.com/agents/metrics/run)
+          cat /tmp/response.json
+          echo "HTTP Status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "FAILED: Agent returned $HTTP_STATUS"
+            exit 1
+          fi
+          echo "SUCCESS: Metrics agent ran"
