@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Space_Mono } from "next/font/google";
 import { supabase } from "@/lib/supabase";
-
-const spaceMono = Space_Mono({ subsets: ["latin"], weight: ["400", "700"] });
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -23,24 +20,23 @@ type LogRow = {
 type Metrics = { mrr: number; users: number; emails: number };
 
 // ── Roster ─────────────────────────────────────────────────────────────────
-// display: shown in UI  |  dbName: agent_name column in agent_logs
 
 const ROSTER = [
-  { display: "ContractForge Agent", dbName: "metrics" },
-  { display: "OutreachForge Agent", dbName: "outreach" },
-  { display: "ClientForge Agent",   dbName: "client" },
-  { display: "MeetingForge Agent",  dbName: "meeting" },
-  { display: "SpecForge Agent",     dbName: "spec" },
-  { display: "ReputationForge Agent", dbName: "reputation" },
-  { display: "FounderOS Agent",     dbName: "founderos" },
+  { display: "ContractForge Agent",  dbName: "metrics"    },
+  { display: "OutreachForge Agent",  dbName: "outreach"   },
+  { display: "ClientForge Agent",    dbName: "client"     },
+  { display: "MeetingForge Agent",   dbName: "meeting"    },
+  { display: "SpecForge Agent",      dbName: "spec"       },
+  { display: "ReputationForge Agent",dbName: "reputation" },
+  { display: "FounderOS Agent",      dbName: "founderos"  },
 ] as const;
 
 // ── Pure helpers ───────────────────────────────────────────────────────────
 
 function relativeTime(iso: string): string {
   const diff = (Date.now() - new Date(iso).getTime()) / 1000;
-  if (diff < 60) return `${Math.floor(diff)}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 60)    return `${Math.floor(diff)}s ago`;
+  if (diff < 3600)  return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
 }
@@ -64,81 +60,136 @@ function deriveMetrics(logs: LogRow[]): Metrics {
   const metricsRow = logs.find(
     (l) => l.agent_name === "metrics" && l.status === "success" && l.summary,
   );
-  const mrr   = Number(metricsRow?.summary?.["mrr_inr"]     ?? 2499);
+  const mrr    = Number(metricsRow?.summary?.["mrr_inr"]     ?? 2499);
   const users  = Number(metricsRow?.summary?.["total_users"] ?? 0);
   const emails = logs.filter((l) => l.summary?.["action"] === "email_sent").length;
   return { mrr, users, emails };
 }
 
+// ── Design tokens ──────────────────────────────────────────────────────────
+
+const PANEL_STYLE: React.CSSProperties = {
+  background: "#130F18",
+  border: "1px solid rgba(201,160,101,0.12)",
+  borderRadius: 2,
+  boxShadow: "0 0 40px rgba(139,26,26,0.06) inset",
+};
+
 // ── Sub-components ─────────────────────────────────────────────────────────
 
 function StatusDot({ status }: { status: "active" | "idle" | "error" }) {
-  const color =
-    status === "active" ? "#3EB489" : status === "error" ? "#ef4444" : "#f59e0b";
+  const cfg = {
+    active: { color: "#3EB489", shadow: "0 0 8px #3EB489, 0 0 14px rgba(62,180,137,0.3)"  },
+    idle:   { color: "#D9832A", shadow: "0 0 6px rgba(217,131,42,0.4)"                     },
+    error:  { color: "#C41E1E", shadow: "0 0 8px #C41E1E, 0 0 14px rgba(196,30,30,0.3)"   },
+  }[status];
   return (
-    <span className="relative flex h-2 w-2 shrink-0 mt-[3px]">
-      {status === "active" && (
-        <span
-          className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-60"
-          style={{ backgroundColor: color }}
-        />
-      )}
-      <span
-        className="relative inline-flex rounded-full h-2 w-2"
-        style={{ backgroundColor: color }}
-      />
-    </span>
+    <span
+      className={status === "active" ? "animate-pulse" : ""}
+      style={{
+        display: "inline-block",
+        flexShrink: 0,
+        marginTop: 4,
+        width: 6,
+        height: 6,
+        borderRadius: "50%",
+        backgroundColor: cfg.color,
+        boxShadow: cfg.shadow,
+      }}
+    />
   );
+}
+
+function agentBadgeColor(log: LogRow): string {
+  if (log.status === "error")   return "#C41E1E";
+  if (log.status === "success") return "#3EB489";
+  return "#C9A065";
 }
 
 function StatusBadge({ status }: { status: LogRow["status"] }) {
-  if (status === "success")
-    return (
-      <span className="text-[9px] leading-none text-[#3EB489] border border-[#3EB489]/25 rounded px-1.5 py-[3px]">
-        success
-      </span>
-    );
-  if (status === "error")
-    return (
-      <span className="text-[9px] leading-none text-red-400 border border-red-500/25 rounded px-1.5 py-[3px]">
-        error
-      </span>
-    );
+  const cfg = {
+    success: { bg: "rgba(62,180,137,0.15)",  color: "#3EB489", label: "success" },
+    error:   { bg: "rgba(139,26,26,0.18)",   color: "#C41E1E", label: "error"   },
+    skipped: { bg: "rgba(122,95,58,0.18)",   color: "#7A5F3A", label: "skipped" },
+  }[status];
   return (
-    <span className="text-[9px] leading-none text-amber-400 border border-amber-500/25 rounded px-1.5 py-[3px]">
-      skipped
+    <span
+      className="font-space-mono"
+      style={{
+        fontSize: 8,
+        lineHeight: 1,
+        padding: "3px 6px",
+        borderRadius: 2,
+        backgroundColor: cfg.bg,
+        color: cfg.color,
+        letterSpacing: "0.1em",
+        textTransform: "uppercase",
+      }}
+    >
+      {cfg.label}
     </span>
   );
 }
 
-function MetricCard({ label, value }: { label: string; value: string }) {
+function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-white/[0.06] bg-white/[0.025] px-4 py-3">
-      <p className="text-[9px] uppercase tracking-[0.18em] text-zinc-600 mb-1.5">{label}</p>
-      <p className="text-xl font-semibold text-zinc-100 tabular-nums">{value}</p>
+    <div className="shrink-0 mb-4">
+      <p
+        className="font-space-mono uppercase"
+        style={{ fontSize: 10, letterSpacing: "0.2em", color: "#C9A065" }}
+      >
+        {children}
+      </p>
+      <div style={{ marginTop: 6, height: 1, background: "rgba(122,95,58,0.2)" }} />
     </div>
   );
 }
 
-function FooterStat({ label, value }: { label: string; value: string }) {
+function MetricCard({ label, value, isGold }: { label: string; value: string; isGold?: boolean }) {
+  return (
+    <div style={{ borderBottom: "1px solid rgba(122,95,58,0.1)", padding: "8px 0" }}>
+      <p
+        className="font-space-mono uppercase"
+        style={{ fontSize: 9, letterSpacing: "0.18em", color: "#A89F94", marginBottom: 2 }}
+      >
+        {label}
+      </p>
+      <p
+        className="font-cormorant"
+        style={{ fontSize: 42, fontWeight: 300, lineHeight: 1.05, color: isGold ? "#C9A065" : "#E8E0D0" }}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function FooterStat({ label, value, isGold }: { label: string; value: string; isGold?: boolean }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[9px] uppercase tracking-[0.18em] text-zinc-600">{label}</span>
-      <span className="text-[11px] text-zinc-300 tabular-nums font-medium">{value}</span>
+      <span
+        className="font-space-mono uppercase"
+        style={{ fontSize: 9, letterSpacing: "0.18em", color: "#A89F94" }}
+      >
+        {label}
+      </span>
+      <span
+        className="font-space-mono tabular-nums"
+        style={{ fontSize: 11, color: isGold ? "#C9A065" : "#A89F94" }}
+      >
+        {value}
+      </span>
     </div>
   );
 }
 
 // ── Page ───────────────────────────────────────────────────────────────────
 
-const PANEL = "bg-white/[0.04] border border-white/[0.07] backdrop-blur-md rounded-xl overflow-hidden";
-const SECTION_LABEL = "text-[9px] uppercase tracking-[0.2em] text-zinc-600 mb-4 shrink-0";
-
 export default function WarRoomPage() {
   const router = useRouter();
-  const [ready, setReady]   = useState(false);
-  const [logs,  setLogs]    = useState<LogRow[]>([]);
-  const [,      setTick]    = useState(0);
+  const [ready, setReady] = useState(false);
+  const [logs,  setLogs]  = useState<LogRow[]>([]);
+  const [,      setTick]  = useState(0);
 
   // Auth gate — same client-side pattern as /dashboard
   useEffect(() => {
@@ -191,8 +242,14 @@ export default function WarRoomPage() {
 
   if (!ready) {
     return (
-      <div className="h-screen w-screen bg-[#09090b] flex items-center justify-center">
-        <span className="text-[10px] text-zinc-700 animate-pulse font-mono tracking-[0.3em]">
+      <div
+        className="h-screen w-screen flex items-center justify-center"
+        style={{ background: "#040208" }}
+      >
+        <span
+          className="font-space-mono animate-pulse"
+          style={{ fontSize: 10, color: "#7A5F3A", letterSpacing: "0.3em" }}
+        >
           AUTHORIZING
         </span>
       </div>
@@ -203,107 +260,182 @@ export default function WarRoomPage() {
 
   return (
     <div
-      className={`${spaceMono.className} h-screen w-screen overflow-hidden bg-[#09090b] text-zinc-100 flex flex-col`}
+      className="h-screen w-screen overflow-hidden flex flex-col"
+      style={{ background: "#040208" }}
     >
-      {/* ── Header ── */}
-      <header className="shrink-0 border-b border-white/[0.06] h-11 px-5 flex items-center gap-3">
-        <span className="text-[9px] uppercase tracking-[0.22em] text-zinc-600">ContractForge</span>
-        <span className="text-zinc-800">·</span>
-        <span className="text-[9px] uppercase tracking-[0.18em] text-zinc-400">War Room</span>
-        <div className="ml-auto flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#3EB489] animate-pulse" />
-          <span className="text-[8px] uppercase tracking-[0.22em] text-zinc-600">Live</span>
-        </div>
-      </header>
+      {/* Crimson depth gradient */}
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{
+          background: "radial-gradient(ellipse at 50% 30%, rgba(139,26,26,0.08) 0%, transparent 70%)",
+          zIndex: 0,
+        }}
+      />
 
-      {/* ── Three panels ── */}
-      <main className="flex-1 flex gap-2.5 p-2.5 min-h-0">
+      <div className="relative z-10 flex flex-col h-full">
 
-        {/* Panel 1 — AgentRoster 25% */}
-        <aside className={`w-1/4 shrink-0 flex flex-col ${PANEL} p-4`}>
-          <p className={SECTION_LABEL}>Agents</p>
-          <ul className="flex-1 space-y-3 overflow-y-auto">
-            {ROSTER.map(({ display, dbName }) => {
-              const st      = agentStatus(logs, dbName);
-              const lastLog = logs.find((l) => l.agent_name === dbName);
-              return (
-                <li key={dbName} className="flex items-start gap-2.5">
-                  <StatusDot status={st} />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] text-zinc-300 leading-tight truncate">{display}</p>
-                    <p className="text-[9px] text-zinc-700 mt-0.5">
-                      {lastLog ? relativeTime(lastLog.created_at) : "idle"}
+        {/* ── Header ── */}
+        <header
+          className="shrink-0 h-11 px-5 flex items-center gap-3"
+          style={{ borderBottom: "1px solid rgba(201,160,101,0.15)" }}
+        >
+          <span
+            className="font-space-mono uppercase"
+            style={{ fontSize: 9, letterSpacing: "0.22em", color: "#A89F94" }}
+          >
+            CONTRACTFORGE
+          </span>
+          <span style={{ color: "rgba(201,160,101,0.3)", fontSize: 11 }}>→</span>
+          <span
+            className="font-space-mono uppercase"
+            style={{ fontSize: 9, letterSpacing: "0.18em", color: "#A89F94" }}
+          >
+            WAR ROOM
+          </span>
+          <div className="ml-auto flex items-center gap-1.5">
+            <span
+              className="rounded-full animate-pulse"
+              style={{ width: 6, height: 6, backgroundColor: "#3EB489", display: "inline-block" }}
+            />
+            <span
+              className="font-space-mono uppercase"
+              style={{ fontSize: 8, letterSpacing: "0.22em", color: "#3EB489" }}
+            >
+              LIVE
+            </span>
+          </div>
+        </header>
+
+        {/* ── Three panels ── */}
+        <main className="flex-1 flex gap-2.5 p-2.5 min-h-0">
+
+          {/* Panel 1 — AgentRoster 25% */}
+          <aside className="w-1/4 shrink-0 flex flex-col p-4 md:w-1/4 w-full md:h-full" style={PANEL_STYLE}>
+            <SectionLabel>Agents</SectionLabel>
+            <ul className="flex-1 overflow-y-auto">
+              {ROSTER.map(({ display, dbName }) => {
+                const st      = agentStatus(logs, dbName);
+                const lastLog = logs.find((l) => l.agent_name === dbName);
+                return (
+                  <li
+                    key={dbName}
+                    className="flex items-start gap-2.5 py-3"
+                    style={{ borderBottom: "1px solid rgba(122,95,58,0.08)" }}
+                  >
+                    <StatusDot status={st} />
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className="font-cormorant leading-tight truncate"
+                        style={{ fontSize: 16, fontWeight: 400, color: "#E8E0D0" }}
+                      >
+                        {display}
+                      </p>
+                      <p
+                        className="font-space-mono mt-0.5"
+                        style={{ fontSize: 9, color: "#A89F94" }}
+                      >
+                        {lastLog ? relativeTime(lastLog.created_at) : "idle"}
+                      </p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </aside>
+
+          {/* Panel 2 — ActivityStream 45% */}
+          <section className="flex-1 flex flex-col min-w-0 p-4" style={PANEL_STYLE}>
+            <SectionLabel>
+              Activity Stream{" "}
+              <span style={{ color: "rgba(201,160,101,0.3)" }}>{logs.length}</span>
+            </SectionLabel>
+            <div className="flex-1 overflow-y-auto pr-0.5" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              {logs.map((log) => (
+                <div
+                  key={log.id}
+                  className="flex items-start gap-3 px-3 py-2 transition-colors duration-150"
+                  style={{ borderRadius: 2 }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(201,160,101,0.03)"; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                      <span
+                        className="font-space-mono uppercase"
+                        style={{ fontSize: 8, letterSpacing: "0.15em", color: agentBadgeColor(log) }}
+                      >
+                        {log.agent_name}
+                      </span>
+                      <StatusBadge status={log.status} />
+                    </div>
+                    <p
+                      className="font-cormorant italic truncate"
+                      style={{ fontSize: 14, color: "#E8E0D0" }}
+                    >
+                      {actionLabel(log)}
                     </p>
+                    {log.error_message && (
+                      <p
+                        className="font-space-mono mt-0.5 truncate"
+                        style={{ fontSize: 9, color: "#C41E1E", opacity: 0.7 }}
+                      >
+                        {log.error_message}
+                      </p>
+                    )}
                   </div>
-                </li>
-              );
-            })}
-          </ul>
-        </aside>
-
-        {/* Panel 2 — ActivityStream 45% */}
-        <section className={`flex-1 flex flex-col min-w-0 ${PANEL} p-4`}>
-          <p className={SECTION_LABEL}>
-            Activity Stream
-            <span className="ml-2 text-zinc-800">{logs.length} entries</span>
-          </p>
-          <div className="flex-1 overflow-y-auto space-y-1.5 pr-0.5">
-            {logs.map((log) => (
-              <div
-                key={log.id}
-                className="flex items-start gap-3 rounded-lg bg-white/[0.025] border border-white/[0.04] px-3 py-2"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                    <span className="text-[9px] font-medium text-[#3EB489] uppercase tracking-[0.15em] truncate">
-                      {log.agent_name}
-                    </span>
-                    <StatusBadge status={log.status} />
-                  </div>
-                  <p className="text-[11px] text-zinc-300 truncate">{actionLabel(log)}</p>
-                  {log.error_message && (
-                    <p className="text-[10px] text-red-400 mt-0.5 truncate">{log.error_message}</p>
-                  )}
+                  <span
+                    className="shrink-0 font-space-mono mt-0.5 whitespace-nowrap"
+                    style={{ fontSize: 9, color: "#A89F94" }}
+                  >
+                    {relativeTime(log.created_at)}
+                  </span>
                 </div>
-                <span className="shrink-0 text-[9px] text-zinc-700 mt-0.5 whitespace-nowrap">
-                  {relativeTime(log.created_at)}
-                </span>
-              </div>
-            ))}
-            {logs.length === 0 && (
-              <div className="flex items-center justify-center h-32">
-                <p className="text-[11px] text-zinc-700">No activity yet</p>
-              </div>
-            )}
-          </div>
-        </section>
+              ))}
+              {logs.length === 0 && (
+                <div className="flex items-center justify-center h-32">
+                  <p className="font-space-mono" style={{ fontSize: 11, color: "rgba(122,95,58,0.5)" }}>
+                    No activity yet
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
 
-        {/* Panel 3 — MetricsBar 30% */}
-        <aside className={`w-[27%] shrink-0 flex flex-col ${PANEL} p-4`}>
-          <p className={SECTION_LABEL}>Metrics</p>
-          <div className="flex flex-col gap-2.5 flex-1">
-            <MetricCard label="MRR"             value={`₹${metrics.mrr.toLocaleString("en-IN")}`} />
-            <MetricCard label="Active Agents"   value="7" />
-            <MetricCard label="Users"           value={String(metrics.users)} />
-            <MetricCard label="Emails Sent"     value={String(metrics.emails)} />
-            <MetricCard label="Pipeline Stages" value="18" />
-          </div>
-        </aside>
+          {/* Panel 3 — MetricsBar 27% */}
+          <aside className="w-[27%] shrink-0 flex flex-col p-4" style={PANEL_STYLE}>
+            <SectionLabel>Metrics</SectionLabel>
+            <div className="flex flex-col flex-1 justify-between">
+              <MetricCard label="MRR"             value={`₹${metrics.mrr.toLocaleString("en-IN")}`} isGold />
+              <MetricCard label="Active Agents"   value="7" />
+              <MetricCard label="Users"           value={String(metrics.users)} />
+              <MetricCard label="Emails Sent"     value={String(metrics.emails)} />
+              <MetricCard label="Pipeline Stages" value="18" />
+            </div>
+          </aside>
 
-      </main>
+        </main>
 
-      {/* ── Bottom strip ── */}
-      <footer className="shrink-0 border-t border-white/[0.06] h-9 px-5 flex items-center gap-6">
-        <FooterStat label="MRR"            value={`₹${metrics.mrr.toLocaleString("en-IN")}`} />
-        <span className="text-zinc-800">·</span>
-        <FooterStat label="Active Agents"  value="7" />
-        <span className="text-zinc-800">·</span>
-        <FooterStat label="Users"          value={String(metrics.users)} />
-        <span className="text-zinc-800">·</span>
-        <FooterStat label="Emails"         value={String(metrics.emails)} />
-        <span className="text-zinc-800">·</span>
-        <FooterStat label="Pipeline"       value="18 stages" />
-      </footer>
+        {/* ── Bottom strip ── */}
+        <footer
+          className="shrink-0 h-9 px-5 flex items-center gap-5 overflow-x-auto"
+          style={{
+            background: "rgba(13,8,16,0.95)",
+            backdropFilter: "blur(8px)",
+            borderTop: "1px solid rgba(201,160,101,0.15)",
+          }}
+        >
+          <FooterStat label="MRR"           value={`₹${metrics.mrr.toLocaleString("en-IN")}`} isGold />
+          <span style={{ color: "rgba(201,160,101,0.2)" }}>·</span>
+          <FooterStat label="Active Agents" value="7" />
+          <span style={{ color: "rgba(201,160,101,0.2)" }}>·</span>
+          <FooterStat label="Users"         value={String(metrics.users)} />
+          <span style={{ color: "rgba(201,160,101,0.2)" }}>·</span>
+          <FooterStat label="Emails"        value={String(metrics.emails)} />
+          <span style={{ color: "rgba(201,160,101,0.2)" }}>·</span>
+          <FooterStat label="Pipeline"      value="18 stages" />
+        </footer>
+
+      </div>
     </div>
   );
 }
