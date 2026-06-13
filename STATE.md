@@ -1,6 +1,29 @@
 # ContractForge — Build State
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WAR ROOM — Day 159 — June 13 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ Phase 1: agent_logs table confirmed (004_agent_logs.sql, row in Supabase)
+  schema: id, agent_name, run_at, status(success/error/skipped), summary JSONB,
+          error_message, duration_ms, created_at
+  real agent writes: agent_name="metrics"
+  NOTE: schema differs from brief spec — adapted, no migration needed
+✅ Phase 2+3: /war-room page built (3 panels + auth gate)
+  frontend/app/war-room/page.tsx
+  Panels: AgentRoster (25%) | ActivityStream (45%) | MetricsBar (30%)
+  Realtime: supabase.channel postgres_changes INSERT on agent_logs
+  Auth: client-side getSession() → redirect /auth/signin if no session,
+        redirect /dashboard if not NEXT_PUBLIC_ADMIN_EMAIL
+PENDING USER ACTIONS (before war room works live):
+  1. Supabase SQL editor: alter publication supabase_realtime add table agent_logs;
+  2. Supabase SQL editor: run seed data (Phase 4 SQL below in notes)
+  3. Vercel: add NEXT_PUBLIC_ADMIN_EMAIL = padmajakotoky73@gmail.com
+NEXT SESSION (Day 160): OutreachDraftAgent scaffold
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+xenarch // ContractForge // War Room — Day 159
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SPRINT DAY 2 — Day 157 — June 13 2026
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ autonomy-sprint merged → main (5eb912b)
