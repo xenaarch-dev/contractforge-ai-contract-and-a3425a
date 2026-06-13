@@ -51,10 +51,10 @@ export default function HomePage() {
           <span className="font-cormorant italic" style={{ fontSize: 18, color: "#C9A065" }}>
             ContractForge
           </span>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
             <a
               href="/auth/signin"
-              className="font-space-mono uppercase transition-colors"
+              className="hidden sm:inline font-space-mono uppercase transition-colors"
               style={{ fontSize: 10, letterSpacing: "0.15em", color: "#A89F94" }}
               onMouseOver={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "#E8E0D0"; }}
               onMouseOut={(e)  => { (e.currentTarget as HTMLAnchorElement).style.color = "#A89F94"; }}

@@ -260,7 +260,7 @@ export default function WarRoomPage() {
 
   return (
     <div
-      className="h-screen w-screen overflow-hidden flex flex-col"
+      className="min-h-screen w-screen overflow-y-auto md:h-screen md:overflow-hidden flex flex-col"
       style={{ background: "#040208" }}
     >
       {/* Crimson depth gradient */}
@@ -272,7 +272,7 @@ export default function WarRoomPage() {
         }}
       />
 
-      <div className="relative z-10 flex flex-col h-full">
+      <div className="relative z-10 flex flex-col md:h-full">
 
         {/* ── Header ── */}
         <header
@@ -307,12 +307,12 @@ export default function WarRoomPage() {
         </header>
 
         {/* ── Three panels ── */}
-        <main className="flex-1 flex gap-2.5 p-2.5 min-h-0">
+        <main className="flex-1 flex flex-col md:flex-row gap-2.5 p-2.5 md:min-h-0">
 
           {/* Panel 1 — AgentRoster 25% */}
-          <aside className="w-1/4 shrink-0 flex flex-col p-4 md:w-1/4 w-full md:h-full" style={PANEL_STYLE}>
+          <aside className="w-full md:w-1/4 shrink-0 flex flex-col p-4" style={PANEL_STYLE}>
             <SectionLabel>Agents</SectionLabel>
-            <ul className="flex-1 overflow-y-auto">
+            <ul className="grid grid-cols-2 md:block md:flex-1 md:overflow-y-auto gap-x-2">
               {ROSTER.map(({ display, dbName }) => {
                 const st      = agentStatus(logs, dbName);
                 const lastLog = logs.find((l) => l.agent_name === dbName);
@@ -344,7 +344,7 @@ export default function WarRoomPage() {
           </aside>
 
           {/* Panel 2 — ActivityStream 45% */}
-          <section className="flex-1 flex flex-col min-w-0 p-4" style={PANEL_STYLE}>
+          <section className="flex-1 flex flex-col min-w-0 p-4 max-h-[50vh] md:max-h-none" style={PANEL_STYLE}>
             <SectionLabel>
               Activity Stream{" "}
               <span style={{ color: "rgba(201,160,101,0.3)" }}>{logs.length}</span>
@@ -402,9 +402,9 @@ export default function WarRoomPage() {
           </section>
 
           {/* Panel 3 — MetricsBar 27% */}
-          <aside className="w-[27%] shrink-0 flex flex-col p-4" style={PANEL_STYLE}>
+          <aside className="w-full md:w-[27%] shrink-0 flex flex-col p-4" style={PANEL_STYLE}>
             <SectionLabel>Metrics</SectionLabel>
-            <div className="flex flex-col flex-1 justify-between">
+            <div className="grid grid-cols-2 gap-3 md:flex md:flex-col md:flex-1 md:justify-between md:gap-0">
               <MetricCard label="MRR"             value={`₹${metrics.mrr.toLocaleString("en-IN")}`} isGold />
               <MetricCard label="Active Agents"   value="7" />
               <MetricCard label="Users"           value={String(metrics.users)} />
