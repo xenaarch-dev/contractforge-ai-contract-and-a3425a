@@ -1,175 +1,336 @@
-const PER_CONTRACT_URL =
-  process.env.NEXT_PUBLIC_CHECKOUT_PER_CONTRACT ?? "#";
-const MONTHLY_URL =
-  process.env.NEXT_PUBLIC_CHECKOUT_MONTHLY ?? "#";
+const PER_CONTRACT_URL = process.env.NEXT_PUBLIC_CHECKOUT_PER_CONTRACT ?? "#";
+const MONTHLY_URL      = process.env.NEXT_PUBLIC_CHECKOUT_MONTHLY      ?? "#";
+
+const PANEL: React.CSSProperties = {
+  background: "#130F18",
+  border: "1px solid rgba(201,160,101,0.12)",
+  borderRadius: 2,
+  boxShadow: "0 0 40px rgba(139,26,26,0.06) inset",
+};
+
+const CLAUSES = [
+  { num: "01", title: "GST Clause",         desc: "18% GST applicable. Tax invoice included with every contract." },
+  { num: "02", title: "Jurisdiction",       desc: "Mumbai courts. Maharashtra law. Indian Contract Act 1872." },
+  { num: "03", title: "Late Payment",       desc: "18% per annum interest. Enforceable under Indian law." },
+  { num: "04", title: "Scope of Work",      desc: "Deliverables, milestones, and revision limits clearly defined." },
+  { num: "05", title: "Payment Schedule",   desc: "Milestone-based payment terms with advance requirements." },
+  { num: "06", title: "Entire Agreement",   desc: "Supersedes all prior negotiations. No verbal modifications." },
+  { num: "07", title: "Signature Block",    desc: "Name, designation, date, and place. Legally binding." },
+];
+
+const PAIN_POINTS = [
+  { num: "4+",   unit: "HOURS / WEEK",    desc: "Spent chasing unpaid invoices and rewriting contracts from scratch." },
+  { num: "₹20L", unit: "AVERAGE LOSS",    desc: "Indian freelancers lose per year to poorly drafted agreements." },
+  { num: "73%",  unit: "NEVER COLLECT",   desc: "Of freelancers fail to recover final payments without a contract." },
+];
+
+import type React from "react";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      {/* NAV */}
-      <nav className="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <span className="text-lg font-bold tracking-tight">ContractForge</span>
-          <div className="flex items-center gap-3">
+    <div className="min-h-screen" style={{ background: "#040208", color: "#E8E0D0" }}>
+
+      {/* ══════════════════════════════════════════════════════
+          SECTION 1 — HERO
+      ══════════════════════════════════════════════════════ */}
+      <section
+        className="relative min-h-screen flex flex-col"
+        style={{
+          background: [
+            "radial-gradient(ellipse at 15% 85%, rgba(139,26,26,0.15) 0%, transparent 50%)",
+            "radial-gradient(ellipse at 85% 10%, rgba(139,26,26,0.05) 0%, transparent 40%)",
+            "#040208",
+          ].join(", "),
+        }}
+      >
+        {/* Nav */}
+        <nav
+          className="sticky top-0 z-50 flex items-center justify-between px-8 py-5"
+          style={{ borderBottom: "1px solid rgba(201,160,101,0.08)", backdropFilter: "blur(8px)", background: "rgba(4,2,8,0.85)" }}
+        >
+          <span className="font-cormorant italic" style={{ fontSize: 18, color: "#C9A065" }}>
+            ContractForge
+          </span>
+          <div className="flex items-center gap-6">
             <a
               href="/auth/signin"
-              className="rounded-xl px-4 py-2 text-sm font-medium text-zinc-300 transition hover:text-white"
+              className="font-space-mono uppercase transition-colors"
+              style={{ fontSize: 10, letterSpacing: "0.15em", color: "#A89F94" }}
+              onMouseOver={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "#E8E0D0"; }}
+              onMouseOut={(e)  => { (e.currentTarget as HTMLAnchorElement).style.color = "#A89F94"; }}
             >
               Sign in
             </a>
             <a
               href="/auth/signup"
-              className="rounded-xl bg-[#3E5F44] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#4a7252]"
+              className="font-space-mono uppercase transition-colors"
+              style={{
+                fontSize: 10,
+                letterSpacing: "0.15em",
+                color: "#C9A065",
+                border: "1px solid rgba(201,160,101,0.4)",
+                padding: "7px 16px",
+                borderRadius: 2,
+              }}
+              onMouseOver={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#C9A065"; }}
+              onMouseOut={(e)  => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(201,160,101,0.4)"; }}
             >
-              Start free
+              Start Free
+            </a>
+          </div>
+        </nav>
+
+        {/* Hero content */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center" style={{ paddingTop: "6vh", paddingBottom: "4vh" }}>
+          <p
+            className="font-space-mono uppercase mb-6"
+            style={{ fontSize: 10, letterSpacing: "0.3em", color: "#C9A065" }}
+          >
+            Built for Indian Law
+          </p>
+
+          <h1
+            className="font-cormorant italic"
+            style={{
+              fontSize: "clamp(52px, 8vw, 88px)",
+              fontWeight: 300,
+              lineHeight: 1.12,
+              color: "#E8E0D0",
+              maxWidth: 800,
+            }}
+          >
+            Your clients pay.
+            <br />
+            Your contracts make sure of it.
+          </h1>
+
+          <p
+            className="font-space-mono mt-8"
+            style={{ fontSize: 13, lineHeight: 1.8, color: "#A89F94", maxWidth: 400 }}
+          >
+            GST-compliant. Indian Contract Act 1872.
+            <br />
+            Mumbai jurisdiction. 5 minutes.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center gap-4 mt-10">
+            <a
+              href="/auth/signup"
+              className="font-space-mono transition-colors"
+              style={{
+                fontSize: 12,
+                letterSpacing: "0.1em",
+                color: "#E8E0D0",
+                border: "1px solid rgba(139,26,26,0.7)",
+                background: "rgba(139,26,26,0.2)",
+                padding: "13px 28px",
+                borderRadius: 2,
+                display: "inline-block",
+              }}
+              onMouseOver={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(139,26,26,0.35)"; }}
+              onMouseOut={(e)  => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(139,26,26,0.2)"; }}
+            >
+              Generate your first contract →
+            </a>
+            <a
+              href="/pricing"
+              className="font-space-mono uppercase transition-colors"
+              style={{ fontSize: 10, letterSpacing: "0.15em", color: "#C9A065" }}
+              onMouseOver={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "#E8E0D0"; }}
+              onMouseOut={(e)  => { (e.currentTarget as HTMLAnchorElement).style.color = "#C9A065"; }}
+            >
+              See pricing
             </a>
           </div>
         </div>
-      </nav>
 
-      {/* HERO */}
-      <section className="mx-auto max-w-3xl px-6 py-24 text-center">
-        <span className="mb-6 inline-block rounded-full border border-[#3E5F44]/40 bg-[#3E5F44]/10 px-4 py-1.5 text-xs font-medium tracking-wide text-[#DDD6B9]">
-          Built for Indian freelancers
-        </span>
-        <h1 className="mt-4 text-5xl font-bold leading-tight tracking-tight md:text-6xl">
-          Your next client contract.
-          <br />
-          Done in 30 seconds.
-        </h1>
-        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-zinc-400">
-          GST-compliant. PDF export.
-          <br />
-          Mumbai jurisdiction. Indian Contract Act.
-          <br />
-          Professional contracts without a lawyer.
-        </p>
-        <div className="mt-10">
-          <a
-            href="/auth/signup"
-            className="inline-block rounded-xl bg-[#3E5F44] px-8 py-4 text-base font-semibold text-white transition hover:bg-[#4a7252]"
+        {/* Scroll indicator */}
+        <div className="flex flex-col items-center pb-8 gap-2">
+          <div style={{ height: 1, width: 240, background: "rgba(201,160,101,0.15)" }} />
+          <div className="flex flex-col items-center gap-1 mt-3">
+            <span
+              className="font-space-mono uppercase animate-bounce"
+              style={{ fontSize: 9, letterSpacing: "0.3em", color: "rgba(201,160,101,0.4)" }}
+            >
+              Scroll
+            </span>
+            <span style={{ color: "rgba(201,160,101,0.3)", fontSize: 12 }}>↓</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          SECTION 2 — THE PROBLEM
+      ══════════════════════════════════════════════════════ */}
+      <section className="px-6 py-24" style={{ background: "#0D0810" }}>
+        <div className="mx-auto max-w-5xl">
+          <h2
+            className="font-cormorant italic text-center mb-16"
+            style={{ fontSize: "clamp(32px,5vw,48px)", fontWeight: 400, color: "#E8E0D0" }}
           >
-            Generate your first contract — free
-          </a>
-          <p className="mt-4 text-sm text-zinc-500">
-            No credit card. No lawyer. 30 seconds.
-          </p>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className="border-t border-zinc-800 bg-zinc-900/30 px-6 py-20">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="mb-12 text-center text-2xl font-bold tracking-tight">
-            How it works
+            Indian freelancers lose lakhs to bad contracts.
           </h2>
+
           <div className="grid gap-6 md:grid-cols-3">
-            {[
-              {
-                step: "01",
-                title: "Describe your project",
-                body: "One sentence. Client name, scope, fee.",
-              },
-              {
-                step: "02",
-                title: "Get your contract",
-                body: "AI drafts a complete, legally-sound agreement in under 30 seconds.",
-              },
-              {
-                step: "03",
-                title: "Export and send",
-                body: "Download as PDF. Sign. Done.",
-              },
-            ].map((item) => (
+            {PAIN_POINTS.map((p) => (
               <div
-                key={item.step}
-                className="rounded-2xl border border-zinc-800 bg-zinc-900 p-8"
+                key={p.unit}
+                className="p-6"
+                style={{
+                  ...PANEL,
+                  borderLeft: "2px solid #8B1A1A",
+                }}
               >
-                <span className="text-sm font-bold text-[#3E5F44]">
-                  {item.step}
+                <p
+                  className="font-cormorant"
+                  style={{ fontSize: 52, fontWeight: 300, lineHeight: 1, color: "#C9A065" }}
+                >
+                  {p.num}
+                </p>
+                <p
+                  className="font-space-mono uppercase mt-1"
+                  style={{ fontSize: 9, letterSpacing: "0.2em", color: "#A89F94" }}
+                >
+                  {p.unit}
+                </p>
+                <p
+                  className="font-space-mono mt-4"
+                  style={{ fontSize: 11, lineHeight: 1.7, color: "#A89F94" }}
+                >
+                  {p.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          SECTION 3 — THE SOLUTION
+      ══════════════════════════════════════════════════════ */}
+      <section className="px-6 py-24" style={{ background: "#040208" }}>
+        <div className="mx-auto max-w-3xl">
+          <h2
+            className="font-cormorant italic text-center mb-16"
+            style={{ fontSize: "clamp(32px,5vw,48px)", fontWeight: 400, color: "#E8E0D0" }}
+          >
+            Five minutes. Every clause covered.
+          </h2>
+
+          <div>
+            {CLAUSES.map((c, i) => (
+              <div
+                key={c.num}
+                className="flex items-baseline gap-6 py-5 transition-all duration-200 group"
+                style={{
+                  borderBottom: i < CLAUSES.length - 1 ? "1px solid rgba(122,95,58,0.15)" : "none",
+                  borderLeft: "2px solid transparent",
+                  paddingLeft: 12,
+                  cursor: "default",
+                }}
+                onMouseEnter={(e) => {
+                  const el = e.currentTarget as HTMLDivElement;
+                  el.style.background = "#130F18";
+                  el.style.borderLeftColor = "#8B1A1A";
+                }}
+                onMouseLeave={(e) => {
+                  const el = e.currentTarget as HTMLDivElement;
+                  el.style.background = "transparent";
+                  el.style.borderLeftColor = "transparent";
+                }}
+              >
+                <span
+                  className="font-space-mono shrink-0"
+                  style={{ fontSize: 10, color: "#C9A065", letterSpacing: "0.1em" }}
+                >
+                  {c.num}
                 </span>
-                <h3 className="mt-3 text-lg font-semibold text-white">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-                  {item.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* WHAT'S INSIDE */}
-      <section className="px-6 py-20">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="mb-12 text-center text-2xl font-bold tracking-tight">
-            What&apos;s inside every contract
-          </h2>
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-            {[
-              {
-                title: "GST Clause",
-                body: "18% GST applicable. Invoice included.",
-              },
-              {
-                title: "Jurisdiction",
-                body: "Mumbai courts. Maharashtra law.",
-              },
-              {
-                title: "Late Payment",
-                body: "18% per annum. Indian Contract Act.",
-              },
-              {
-                title: "Signature Block",
-                body: "Name, designation, date, place.",
-              },
-            ].map((item) => (
-              <div
-                key={item.title}
-                className="rounded-2xl border border-zinc-800 bg-zinc-900 p-6"
-              >
-                <h3 className="text-sm font-semibold text-white">
-                  {item.title}
-                </h3>
-                <p className="mt-2 text-xs leading-relaxed text-zinc-400">
-                  {item.body}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section className="border-t border-zinc-800 bg-zinc-900/30 px-6 py-20">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="mb-12 text-center text-2xl font-bold tracking-tight">
-            Simple, transparent pricing
-          </h2>
-          <div className="grid gap-8 md:grid-cols-2">
-            {/* Per Contract */}
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 p-8">
-              <h3 className="text-xl font-semibold text-white">Per Contract</h3>
-              <div className="mt-3 flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-white">&#8377;1,499</span>
-              </div>
-              <p className="mt-1 text-sm text-zinc-400">Pay as you go</p>
-              <ul className="mt-6 space-y-2">
-                {[
-                  "One complete contract",
-                  "PDF export",
-                  "All India clauses",
-                  "Never expires",
-                ].map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-center gap-2 text-sm text-zinc-300"
+                <div className="flex-1 min-w-0">
+                  <span
+                    className="font-cormorant"
+                    style={{ fontSize: 22, fontWeight: 400, color: "#E8E0D0" }}
                   >
-                    <span className="text-[#3E5F44]" aria-hidden="true">
-                      &#10003;
-                    </span>
-                    {feature}
+                    {c.title}
+                  </span>
+                  <span
+                    className="font-space-mono ml-4"
+                    style={{ fontSize: 11, color: "#A89F94" }}
+                  >
+                    — {c.desc}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-14 text-center">
+            <a
+              href="/auth/signup"
+              className="font-space-mono transition-colors"
+              style={{
+                fontSize: 11,
+                letterSpacing: "0.12em",
+                color: "#E8E0D0",
+                border: "1px solid rgba(139,26,26,0.6)",
+                background: "rgba(139,26,26,0.18)",
+                padding: "12px 32px",
+                borderRadius: 2,
+                display: "inline-block",
+              }}
+              onMouseOver={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(139,26,26,0.3)"; }}
+              onMouseOut={(e)  => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(139,26,26,0.18)"; }}
+            >
+              Generate your first contract — free
+            </a>
+            <p
+              className="font-space-mono mt-4"
+              style={{ fontSize: 10, color: "#A89F94", letterSpacing: "0.1em" }}
+            >
+              No credit card. No lawyer.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════
+          SECTION 4 — PRICING
+      ══════════════════════════════════════════════════════ */}
+      <section className="px-6 py-24" style={{ background: "#0D0810" }}>
+        <div className="mx-auto max-w-4xl">
+          <h2
+            className="font-cormorant italic text-center mb-16"
+            style={{ fontSize: "clamp(32px,5vw,48px)", fontWeight: 400, color: "#E8E0D0" }}
+          >
+            Simple, transparent pricing.
+          </h2>
+
+          <div className="grid gap-6 md:grid-cols-2">
+
+            {/* Per Contract */}
+            <div className="p-8 flex flex-col" style={PANEL}>
+              <p
+                className="font-space-mono uppercase"
+                style={{ fontSize: 10, letterSpacing: "0.2em", color: "#C9A065" }}
+              >
+                Per Contract
+              </p>
+              <p
+                className="font-cormorant mt-4"
+                style={{ fontSize: 64, fontWeight: 300, lineHeight: 1, color: "#E8E0D0" }}
+              >
+                ₹1,499
+              </p>
+              <p
+                className="font-space-mono mt-2"
+                style={{ fontSize: 11, color: "#A89F94" }}
+              >
+                Pay as you go
+              </p>
+              <ul className="mt-8 space-y-3 flex-1">
+                {["One complete contract", "PDF export", "All India clauses", "Never expires"].map((f) => (
+                  <li key={f} className="flex items-center gap-3">
+                    <span style={{ color: "#C9A065", fontSize: 12 }}>—</span>
+                    <span className="font-space-mono" style={{ fontSize: 11, color: "#A89F94" }}>{f}</span>
                   </li>
                 ))}
               </ul>
@@ -177,38 +338,70 @@ export default function HomePage() {
                 href={PER_CONTRACT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-8 block w-full rounded-xl border border-[#DDD6B9] px-6 py-3 text-center font-semibold text-[#DDD6B9] transition hover:border-[#DDD6B9]/80 hover:text-white"
+                className="font-space-mono uppercase mt-8 block text-center transition-colors"
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.15em",
+                  color: "#C9A065",
+                  border: "1px solid rgba(201,160,101,0.4)",
+                  padding: "12px",
+                  borderRadius: 2,
+                }}
+                onMouseOver={(e) => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "#C9A065"; }}
+                onMouseOut={(e)  => { (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(201,160,101,0.4)"; }}
               >
                 Buy single contract
               </a>
             </div>
 
-            {/* Monthly */}
-            <div className="rounded-2xl border border-[#3E5F44] bg-[#3E5F44]/10 p-8">
-              <span className="mb-4 inline-block rounded-full bg-[#3E5F44] px-3 py-1 text-xs font-medium text-white">
-                Most popular
-              </span>
-              <h3 className="text-xl font-semibold text-white">Monthly</h3>
-              <div className="mt-3 flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-white">&#8377;2,499</span>
-                <span className="text-zinc-400">/ month</span>
+            {/* Monthly — highlighted */}
+            <div
+              className="p-8 flex flex-col relative"
+              style={{
+                ...PANEL,
+                border: "1px solid rgba(139,26,26,0.5)",
+                background: "linear-gradient(135deg, rgba(139,26,26,0.07) 0%, #130F18 60%)",
+                boxShadow: "0 0 40px rgba(139,26,26,0.12) inset, 0 0 60px rgba(139,26,26,0.06)",
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <p
+                  className="font-space-mono uppercase"
+                  style={{ fontSize: 10, letterSpacing: "0.2em", color: "#C9A065" }}
+                >
+                  Monthly
+                </p>
+                <span
+                  className="font-space-mono uppercase"
+                  style={{
+                    fontSize: 8,
+                    letterSpacing: "0.15em",
+                    color: "#3EB489",
+                    border: "1px solid rgba(62,180,137,0.3)",
+                    padding: "3px 8px",
+                    borderRadius: 2,
+                  }}
+                >
+                  Unlimited Contracts
+                </span>
               </div>
-              <ul className="mt-6 space-y-2">
-                {[
-                  "Unlimited contracts",
-                  "PDF export",
-                  "All India clauses",
-                  "Priority support",
-                  "Cancel anytime",
-                ].map((feature) => (
-                  <li
-                    key={feature}
-                    className="flex items-center gap-2 text-sm text-zinc-300"
-                  >
-                    <span className="text-[#3E5F44]" aria-hidden="true">
-                      &#10003;
-                    </span>
-                    {feature}
+              <p
+                className="font-cormorant mt-4"
+                style={{ fontSize: 64, fontWeight: 300, lineHeight: 1, color: "#E8E0D0" }}
+              >
+                ₹2,499
+              </p>
+              <p
+                className="font-space-mono mt-2"
+                style={{ fontSize: 11, color: "#A89F94" }}
+              >
+                per month
+              </p>
+              <ul className="mt-8 space-y-3 flex-1">
+                {["Unlimited contracts", "PDF export", "All India clauses", "Priority support", "Cancel anytime"].map((f) => (
+                  <li key={f} className="flex items-center gap-3">
+                    <span style={{ color: "#3EB489", fontSize: 12 }}>—</span>
+                    <span className="font-space-mono" style={{ fontSize: 11, color: "#A89F94" }}>{f}</span>
                   </li>
                 ))}
               </ul>
@@ -216,49 +409,72 @@ export default function HomePage() {
                 href={MONTHLY_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-8 block w-full rounded-xl bg-[#3E5F44] px-6 py-3 text-center font-semibold text-white transition hover:bg-[#4a7252]"
+                className="font-space-mono uppercase mt-8 block text-center transition-colors"
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.15em",
+                  color: "#E8E0D0",
+                  background: "rgba(139,26,26,0.6)",
+                  border: "1px solid rgba(139,26,26,0.8)",
+                  padding: "12px",
+                  borderRadius: 2,
+                }}
+                onMouseOver={(e) => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(139,26,26,0.8)"; }}
+                onMouseOut={(e)  => { (e.currentTarget as HTMLAnchorElement).style.background = "rgba(139,26,26,0.6)"; }}
               >
                 Start monthly plan
               </a>
             </div>
-          </div>
-          <p className="mt-10 text-center text-sm text-zinc-500">
-            First contract always free. No credit card required.
-          </p>
-        </div>
-      </section>
 
-      {/* FINAL CTA */}
-      <section className="border-t border-zinc-800 px-6 py-24 text-center">
-        <div className="mx-auto max-w-xl">
-          <h2 className="text-3xl font-bold tracking-tight">
-            Stop copying contracts from Google.
-          </h2>
-          <p className="mt-4 text-zinc-400">
-            Your clients deserve better. So do you.
-          </p>
-          <a
-            href="/auth/signup"
-            className="mt-8 inline-block rounded-xl bg-[#3E5F44] px-8 py-4 font-semibold text-white transition hover:bg-[#4a7252]"
+          </div>
+
+          <p
+            className="font-space-mono text-center mt-10"
+            style={{ fontSize: 10, letterSpacing: "0.1em", color: "rgba(168,159,148,0.5)" }}
           >
-            Generate your first contract
-          </a>
+            First contract always free · No credit card required · GST invoice included
+          </p>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-zinc-800 px-6 py-8">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 text-sm text-zinc-500 sm:flex-row sm:justify-between">
-          <span className="font-semibold text-zinc-300">ContractForge</span>
-          <div className="flex flex-wrap justify-center gap-4 sm:gap-6">
-            <a href="/terms" className="transition hover:text-zinc-300">Terms of Service</a>
-            <a href="/privacy" className="transition hover:text-zinc-300">Privacy Policy</a>
-            <a href="/refund" className="transition hover:text-zinc-300">Refund Policy</a>
-            <a href="/pricing" className="transition hover:text-zinc-300">Pricing</a>
+      {/* ══════════════════════════════════════════════════════
+          SECTION 5 — FOOTER
+      ══════════════════════════════════════════════════════ */}
+      <footer className="px-6 py-12" style={{ background: "#040208", borderTop: "1px solid rgba(201,160,101,0.1)" }}>
+        <div className="mx-auto max-w-5xl">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+            <span className="font-cormorant italic" style={{ fontSize: 20, color: "#C9A065" }}>
+              ContractForge
+            </span>
+            <div className="flex flex-wrap justify-center gap-6">
+              {[
+                { label: "Terms",   href: "/terms"    },
+                { label: "Privacy", href: "/privacy"  },
+                { label: "Refund",  href: "/refund"   },
+                { label: "Pricing", href: "/pricing"  },
+              ].map(({ label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  className="font-space-mono uppercase transition-colors"
+                  style={{ fontSize: 9, letterSpacing: "0.2em", color: "#A89F94" }}
+                  onMouseOver={(e) => { (e.currentTarget as HTMLAnchorElement).style.color = "#E8E0D0"; }}
+                  onMouseOut={(e)  => { (e.currentTarget as HTMLAnchorElement).style.color = "#A89F94"; }}
+                >
+                  {label}
+                </a>
+              ))}
+            </div>
+            <span
+              className="font-space-mono"
+              style={{ fontSize: 9, letterSpacing: "0.15em", color: "rgba(168,159,148,0.4)" }}
+            >
+              Built in Mumbai · @xenaarch
+            </span>
           </div>
-          <span>Built in Mumbai &middot; @xenaarch</span>
         </div>
       </footer>
+
     </div>
   );
 }
