@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence, animate } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -22,13 +23,13 @@ type Metrics = { mrr: number; users: number; emails: number };
 // ── Roster ─────────────────────────────────────────────────────────────────
 
 const ROSTER = [
-  { display: "ContractForge Agent",  dbName: "metrics"    },
-  { display: "OutreachForge Agent",  dbName: "outreach"   },
-  { display: "ClientForge Agent",    dbName: "client"     },
-  { display: "MeetingForge Agent",   dbName: "meeting"    },
-  { display: "SpecForge Agent",      dbName: "spec"       },
-  { display: "ReputationForge Agent",dbName: "reputation" },
-  { display: "FounderOS Agent",      dbName: "founderos"  },
+  { display: "ContractForge Agent",   dbName: "metrics"    },
+  { display: "OutreachForge Agent",   dbName: "outreach"   },
+  { display: "ClientForge Agent",     dbName: "client"     },
+  { display: "MeetingForge Agent",    dbName: "meeting"    },
+  { display: "SpecForge Agent",       dbName: "spec"       },
+  { display: "ReputationForge Agent", dbName: "reputation" },
+  { display: "FounderOS Agent",       dbName: "founderos"  },
 ] as const;
 
 // ── Pure helpers ───────────────────────────────────────────────────────────
@@ -75,17 +76,48 @@ const PANEL_STYLE: React.CSSProperties = {
   boxShadow: "0 0 40px rgba(139,26,26,0.06) inset",
 };
 
+// Animation #1 — Panel entrance: fade up, staggered by panel index
+function panelAnim(i: number) {
+  return {
+    initial: { opacity: 0, y: 24 },
+    animate: { opacity: 1, y: 0 },
+    transition: {
+      duration: 0.65,
+      delay: i * 0.15,
+      ease: [0.4, 0, 0.2, 1] as [number, number, number, number],
+    },
+  };
+}
+
+// Animation #5 — Subtle hover lift on panels
+const PANEL_HOVER = {
+  y: -2,
+  boxShadow: "0 0 50px rgba(139,26,26,0.12) inset, 0 2px 12px rgba(139,26,26,0.08)",
+  transition: { duration: 0.2, ease: "easeOut" as const },
+};
+
 // ── Sub-components ─────────────────────────────────────────────────────────
 
+// Animation #2 — Breathing pulse on active status dots
 function StatusDot({ status }: { status: "active" | "idle" | "error" }) {
   const cfg = {
     active: { color: "#3EB489", shadow: "0 0 8px #3EB489, 0 0 14px rgba(62,180,137,0.3)"  },
     idle:   { color: "#D9832A", shadow: "0 0 6px rgba(217,131,42,0.4)"                     },
     error:  { color: "#C41E1E", shadow: "0 0 8px #C41E1E, 0 0 14px rgba(196,30,30,0.3)"   },
   }[status];
+
   return (
-    <span
-      className={status === "active" ? "animate-pulse" : ""}
+    <motion.span
+      animate={
+        status === "active"
+          ? { scale: [1, 1.35, 1], opacity: [1, 0.55, 1] }
+          : undefined
+      }
+      transition={
+        status === "active"
+          ? { duration: 3, repeat: Infinity, ease: "easeInOut" }
+          : undefined
+      }
       style={{
         display: "inline-block",
         flexShrink: 0,
@@ -98,6 +130,23 @@ function StatusDot({ status }: { status: "active" | "idle" | "error" }) {
       }}
     />
   );
+}
+
+// Animation #4 — Count-up from 0 to target value on mount
+function CountUp({ to, prefix = "", duration = 1.5 }: { to: number; prefix?: string; duration?: number }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const controls = animate(0, to, {
+      duration,
+      ease: "easeOut",
+      onUpdate: (v) => setDisplay(Math.round(v)),
+    });
+    return () => controls.stop();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [to]);
+
+  return <>{prefix}{display.toLocaleString("en-IN")}</>;
 }
 
 function agentBadgeColor(log: LogRow): string {
@@ -145,7 +194,12 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-function MetricCard({ label, value, isGold }: { label: string; value: string; isGold?: boolean }) {
+function MetricCard({ label, numericValue, prefix = "", isGold }: {
+  label: string;
+  numericValue: number;
+  prefix?: string;
+  isGold?: boolean;
+}) {
   return (
     <div style={{ borderBottom: "1px solid rgba(122,95,58,0.1)", padding: "8px 0" }}>
       <p
@@ -158,7 +212,7 @@ function MetricCard({ label, value, isGold }: { label: string; value: string; is
         className="font-cormorant"
         style={{ fontSize: 42, fontWeight: 300, lineHeight: 1.05, color: isGold ? "#C9A065" : "#E8E0D0" }}
       >
-        {value}
+        <CountUp to={numericValue} prefix={prefix} />
       </p>
     </div>
   );
@@ -279,17 +333,11 @@ export default function WarRoomPage() {
           className="shrink-0 h-11 px-5 flex items-center gap-3"
           style={{ borderBottom: "1px solid rgba(201,160,101,0.15)" }}
         >
-          <span
-            className="font-space-mono uppercase"
-            style={{ fontSize: 9, letterSpacing: "0.22em", color: "#A89F94" }}
-          >
+          <span className="font-space-mono uppercase" style={{ fontSize: 9, letterSpacing: "0.22em", color: "#A89F94" }}>
             CONTRACTFORGE
           </span>
           <span style={{ color: "rgba(201,160,101,0.3)", fontSize: 11 }}>→</span>
-          <span
-            className="font-space-mono uppercase"
-            style={{ fontSize: 9, letterSpacing: "0.18em", color: "#A89F94" }}
-          >
+          <span className="font-space-mono uppercase" style={{ fontSize: 9, letterSpacing: "0.18em", color: "#A89F94" }}>
             WAR ROOM
           </span>
           <div className="ml-auto flex items-center gap-1.5">
@@ -297,20 +345,22 @@ export default function WarRoomPage() {
               className="rounded-full animate-pulse"
               style={{ width: 6, height: 6, backgroundColor: "#3EB489", display: "inline-block" }}
             />
-            <span
-              className="font-space-mono uppercase"
-              style={{ fontSize: 8, letterSpacing: "0.22em", color: "#3EB489" }}
-            >
+            <span className="font-space-mono uppercase" style={{ fontSize: 8, letterSpacing: "0.22em", color: "#3EB489" }}>
               LIVE
             </span>
           </div>
         </header>
 
-        {/* ── Three panels ── */}
+        {/* ── Three panels (Animation #1 — staggered entrance) ── */}
         <main className="flex-1 flex flex-col md:flex-row gap-2.5 p-2.5 md:min-h-0">
 
           {/* Panel 1 — AgentRoster 25% */}
-          <aside className="w-full md:w-1/4 shrink-0 flex flex-col p-4" style={PANEL_STYLE}>
+          <motion.aside
+            {...panelAnim(0)}
+            whileHover={PANEL_HOVER}
+            className="w-full md:w-1/4 shrink-0 flex flex-col p-4"
+            style={PANEL_STYLE}
+          >
             <SectionLabel>Agents</SectionLabel>
             <ul className="grid grid-cols-2 md:block md:flex-1 md:overflow-y-auto gap-x-2">
               {ROSTER.map(({ display, dbName }) => {
@@ -324,16 +374,10 @@ export default function WarRoomPage() {
                   >
                     <StatusDot status={st} />
                     <div className="min-w-0 flex-1">
-                      <p
-                        className="font-cormorant leading-tight truncate"
-                        style={{ fontSize: 16, fontWeight: 400, color: "#E8E0D0" }}
-                      >
+                      <p className="font-cormorant leading-tight truncate" style={{ fontSize: 16, fontWeight: 400, color: "#E8E0D0" }}>
                         {display}
                       </p>
-                      <p
-                        className="font-space-mono mt-0.5"
-                        style={{ fontSize: 9, color: "#A89F94" }}
-                      >
+                      <p className="font-space-mono mt-0.5" style={{ fontSize: 9, color: "#A89F94" }}>
                         {lastLog ? relativeTime(lastLog.created_at) : "idle"}
                       </p>
                     </div>
@@ -341,56 +385,58 @@ export default function WarRoomPage() {
                 );
               })}
             </ul>
-          </aside>
+          </motion.aside>
 
-          {/* Panel 2 — ActivityStream 45% */}
-          <section className="flex-1 flex flex-col min-w-0 p-4 max-h-[50vh] md:max-h-none" style={PANEL_STYLE}>
+          {/* Panel 2 — ActivityStream 45% (Animation #3 — slide-in new entries) */}
+          <motion.section
+            {...panelAnim(1)}
+            whileHover={PANEL_HOVER}
+            className="flex-1 flex flex-col min-w-0 p-4 max-h-[50vh] md:max-h-none"
+            style={PANEL_STYLE}
+          >
             <SectionLabel>
               Activity Stream{" "}
               <span style={{ color: "rgba(201,160,101,0.3)" }}>{logs.length}</span>
             </SectionLabel>
             <div className="flex-1 overflow-y-auto pr-0.5" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {logs.map((log) => (
-                <div
-                  key={log.id}
-                  className="flex items-start gap-3 px-3 py-2 transition-colors duration-150"
-                  style={{ borderRadius: 2 }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.background = "rgba(201,160,101,0.03)"; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
-                >
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                      <span
-                        className="font-space-mono uppercase"
-                        style={{ fontSize: 8, letterSpacing: "0.15em", color: agentBadgeColor(log) }}
-                      >
-                        {log.agent_name}
-                      </span>
-                      <StatusBadge status={log.status} />
-                    </div>
-                    <p
-                      className="font-cormorant italic truncate"
-                      style={{ fontSize: 14, color: "#E8E0D0" }}
-                    >
-                      {actionLabel(log)}
-                    </p>
-                    {log.error_message && (
-                      <p
-                        className="font-space-mono mt-0.5 truncate"
-                        style={{ fontSize: 9, color: "#C41E1E", opacity: 0.7 }}
-                      >
-                        {log.error_message}
-                      </p>
-                    )}
-                  </div>
-                  <span
-                    className="shrink-0 font-space-mono mt-0.5 whitespace-nowrap"
-                    style={{ fontSize: 9, color: "#A89F94" }}
+              {/* initial={false} skips animation on first render — only new Realtime entries animate */}
+              <AnimatePresence initial={false}>
+                {logs.map((log) => (
+                  <motion.div
+                    key={log.id}
+                    initial={{ opacity: 0, y: -16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] as [number, number, number, number] }}
+                    className="flex items-start gap-3 px-3 py-2"
+                    style={{ borderRadius: 2 }}
+                    whileHover={{ backgroundColor: "rgba(201,160,101,0.03)" }}
                   >
-                    {relativeTime(log.created_at)}
-                  </span>
-                </div>
-              ))}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                        <span
+                          className="font-space-mono uppercase"
+                          style={{ fontSize: 8, letterSpacing: "0.15em", color: agentBadgeColor(log) }}
+                        >
+                          {log.agent_name}
+                        </span>
+                        <StatusBadge status={log.status} />
+                      </div>
+                      <p className="font-cormorant italic truncate" style={{ fontSize: 14, color: "#E8E0D0" }}>
+                        {actionLabel(log)}
+                      </p>
+                      {log.error_message && (
+                        <p className="font-space-mono mt-0.5 truncate" style={{ fontSize: 9, color: "#C41E1E", opacity: 0.7 }}>
+                          {log.error_message}
+                        </p>
+                      )}
+                    </div>
+                    <span className="shrink-0 font-space-mono mt-0.5 whitespace-nowrap" style={{ fontSize: 9, color: "#A89F94" }}>
+                      {relativeTime(log.created_at)}
+                    </span>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
               {logs.length === 0 && (
                 <div className="flex items-center justify-center h-32">
                   <p className="font-space-mono" style={{ fontSize: 11, color: "rgba(122,95,58,0.5)" }}>
@@ -399,19 +445,24 @@ export default function WarRoomPage() {
                 </div>
               )}
             </div>
-          </section>
+          </motion.section>
 
           {/* Panel 3 — MetricsBar 27% */}
-          <aside className="w-full md:w-[27%] shrink-0 flex flex-col p-4" style={PANEL_STYLE}>
+          <motion.aside
+            {...panelAnim(2)}
+            whileHover={PANEL_HOVER}
+            className="w-full md:w-[27%] shrink-0 flex flex-col p-4"
+            style={PANEL_STYLE}
+          >
             <SectionLabel>Metrics</SectionLabel>
             <div className="grid grid-cols-2 gap-3 md:flex md:flex-col md:flex-1 md:justify-between md:gap-0">
-              <MetricCard label="MRR"             value={`₹${metrics.mrr.toLocaleString("en-IN")}`} isGold />
-              <MetricCard label="Active Agents"   value="7" />
-              <MetricCard label="Users"           value={String(metrics.users)} />
-              <MetricCard label="Emails Sent"     value={String(metrics.emails)} />
-              <MetricCard label="Pipeline Stages" value="18" />
+              <MetricCard label="MRR"             numericValue={metrics.mrr} prefix="₹" isGold />
+              <MetricCard label="Active Agents"   numericValue={7} />
+              <MetricCard label="Users"           numericValue={metrics.users} />
+              <MetricCard label="Emails Sent"     numericValue={metrics.emails} />
+              <MetricCard label="Pipeline Stages" numericValue={18} />
             </div>
-          </aside>
+          </motion.aside>
 
         </main>
 
