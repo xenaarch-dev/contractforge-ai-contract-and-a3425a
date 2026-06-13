@@ -1,6 +1,23 @@
 # ContractForge — Build State
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SPRINT DAY 2 — Day 157 — June 13 2026
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✅ autonomy-sprint merged → main (5eb912b)
+✅ Render redeployed — new code live
+✅ AGENT_TRIGGER_KEY set in Render env vars
+✅ POST /agents/metrics/run → 200 on live Render
+✅ agent_logs row confirmed in Supabase (run_at 2026-06-13T07:51:26Z)
+✅ GitHub Actions workflow_dispatch → SUCCESS (run 27460850076)
+LIVE METRICS: total_users=7  active_subscriptions=1  mrr_inr=₹2499
+NOTE: 2 scheduled GH Actions runs (Jun 12+13 05:00 UTC) failed before
+  Render key was fixed — expected. Tomorrow's 00:30 UTC run will succeed.
+NEXT SESSION (Day 158): Sprint Day 2 — OutreachDraftAgent scaffold
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+xenarch // ContractForge // Autonomy Sprint Day 2 of 7
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SPRINT DAY 1 — Day 156 — June 11 2026
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ✅ agent_logs migration created (supabase/migrations/004_agent_logs.sql)
@@ -10,9 +27,6 @@ SPRINT DAY 1 — Day 156 — June 11 2026
 ✅ GitHub Actions workflow committed (.github/workflows/daily-agents.yml)
 COMMITS: e7b845c  24a14ed  21200e9  5d47e0b
 TESTS: 22 total green (18 existing + 4 new agent tests)
-PENDING MANUAL: Supabase SQL, Doppler secret, GitHub secret (see below)
-NEXT SESSION (Day 157): merge to main → Render redeploys
-  → test live endpoint → OutreachDraftAgent scaffold
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 xenarch // ContractForge // Autonomy Sprint Day 1 of 7
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

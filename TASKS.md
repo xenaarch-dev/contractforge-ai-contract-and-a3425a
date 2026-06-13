@@ -4,12 +4,9 @@
 
 ## Todo
 
-### Autonomy Sprint (Day 157 next)
-- [ ] **SP-D1-MANUAL-A** [HIGH] Apply agent_logs migration in Supabase SQL editor (SQL in STATE.md / sprint brief)
-- [ ] **SP-D1-MANUAL-B** [HIGH] Set AGENT_TRIGGER_KEY in Doppler: `doppler secrets set AGENT_TRIGGER_KEY=$(openssl rand -hex 32) --project contractforge --config prd`
-- [ ] **SP-D1-MANUAL-C** [HIGH] Set AGENT_TRIGGER_KEY in GitHub secrets: repo → Settings → Secrets → Actions
-- [ ] **SP-D2** [HIGH] Merge autonomy-sprint → main → Render redeploys → smoke test live endpoint
-- [ ] **SP-D2-AGENT** [MEDIUM] OutreachDraftAgent scaffold (Sprint Day 2)
+### Autonomy Sprint (Day 158 next)
+- [ ] **SP-D3** [HIGH] Sprint Day 2 — OutreachDraftAgent scaffold
+- [ ] **SP-D4** [HIGH] Sprint Day 3 — contracts table + wiring contracts_today metric
 
 ### Existing
 - [ ] **S12-SMOKE** [HIGH] Production smoke test for B1+B2 — verify freelancer fields + markdown rendering on contractforge.co.in
@@ -17,6 +14,12 @@
 - [ ] **PHASE3** [MEDIUM] E-signature flow — Phase 3, not started
 
 ## Done
+
+- [x] **SP-D1-MANUAL-A** Apply agent_logs migration in Supabase SQL editor (Day 156)
+- [x] **SP-D1-MANUAL-B** Set AGENT_TRIGGER_KEY in Doppler (Day 156)
+- [x] **SP-D1-MANUAL-C** Set AGENT_TRIGGER_KEY in GitHub secrets (Day 156)
+- [x] **SP-D2** Merge autonomy-sprint → main + Render live smoke test 200 (Day 157)
+- [x] **SP-D1** Sprint Day 1 complete — agent_logs + MetricsAgent + /agents endpoints + GH Actions (Day 156)
 
 - [x] **B2** Fix raw markdown showing in web preview — ContractMarkdown renderer (Session 11)
 - [x] **B1** Add freelancer name/city/GST fields to form; wire to PDF export (Session 11)
