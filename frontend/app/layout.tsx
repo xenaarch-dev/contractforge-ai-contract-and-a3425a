@@ -1,5 +1,19 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
+import { Cormorant_Garamond, Space_Mono } from "next/font/google";
 import "./globals.css";
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  weight: ["300", "400", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-cormorant",
+});
+
+const spaceMono = Space_Mono({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   title: "ContractForge ⚡ AI contracts for Indian freelancers",
@@ -9,7 +23,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className={`${cormorant.variable} ${spaceMono.variable}`}>{children}</body>
     </html>
   );
 }

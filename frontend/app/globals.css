@@ -2,5 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: light dark; }
-body { @apply bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100; }
+:root {
+  color-scheme: dark;
+
+  /* ── Greek dark palette ── */
+  --bg-void:      #040208;
+  --bg-stone:     #0D0810;
+  --bg-panel:     #130F18;
+  --crimson:      #8B1A1A;
+  --crimson-glow: #C41E1E;
+  --marble:       #E8E0D0;
+  --marble-dim:   #A89F94;
+  --gold:         #C9A065;
+  --gold-dim:     #7A5F3A;
+  --celadon:      #3EB489;
+  --amber:        #D9832A;
+}
+
+body {
+  background-color: var(--bg-void);
+  color: var(--marble);
+}
