@@ -1,3 +1,6 @@
+"use client";
+import type React from "react";
+
 const PER_CONTRACT_URL = process.env.NEXT_PUBLIC_CHECKOUT_PER_CONTRACT ?? "#";
 const MONTHLY_URL      = process.env.NEXT_PUBLIC_CHECKOUT_MONTHLY      ?? "#";
 
@@ -23,8 +26,6 @@ const PAIN_POINTS = [
   { num: "₹20L", unit: "AVERAGE LOSS",    desc: "Indian freelancers lose per year to poorly drafted agreements." },
   { num: "73%",  unit: "NEVER COLLECT",   desc: "Of freelancers fail to recover final payments without a contract." },
 ];
-
-import type React from "react";
 
 export default function HomePage() {
   return (
